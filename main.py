@@ -149,8 +149,30 @@ async def crear_producto(
     return producto_creado
 
 @app.get("/productos/", response_model=list[ProductoListResponse])
-async def obtener_productos():
-    return await crud.obtener_productos()
+async def obtener_productos(
+    id: Optional[int] = None,
+    nombre: Optional[str] = None,
+    precio: Optional[float] = None,
+    precio_min: Optional[float] = None,
+    precio_max: Optional[float] = None,
+    categoria_id: Optional[int] = None,
+    stock: Optional[int] = None,
+    stock_min: Optional[int] = None,
+    stock_max: Optional[int] = None,
+    activo: Optional[bool] = None
+):
+    return await crud.obtener_productos(
+        id=id,
+        nombre=nombre,
+        precio=precio,
+        precio_min=precio_min,
+        precio_max=precio_max,
+        categoria_id=categoria_id,
+        stock=stock,
+        stock_min=stock_min,
+        stock_max=stock_max,
+        activo=activo
+    )
 
 @app.get("/productos/{id}", response_model=Producto)
 async def obtener_producto(id: int):

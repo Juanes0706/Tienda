@@ -112,9 +112,51 @@ async def crear_producto(producto_data):
         print(f"Error creando producto: {e}")
         return None
 
-async def obtener_productos():
+async def obtener_productos(
+    id: Optional[int] = None,
+    nombre: Optional[str] = None,
+    precio: Optional[float] = None,
+    precio_min: Optional[float] = None,
+    precio_max: Optional[float] = None,
+    categoria_id: Optional[int] = None,
+    stock: Optional[int] = None,
+    stock_min: Optional[int] = None,
+    stock_max: Optional[int] = None,
+    activo: Optional[bool] = None
+):
+    from sqlalchemy import and_, or_
     async with AsyncSession(async_engine) as session:
-        result = await session.exec(select(Producto, Categoria.nombre.label("categoria_nombre")).join(Categoria).where(Producto.deleted_at == None))
+        query = select(Producto, Categoria.nombre.label("categoria_nombre")).join(Categoria).where(Producto.deleted_at == None)
+
+        # Aplicar filtros dinámicos
+        if id is not None:
+            query = query.where(Producto.id == id)
+        if nombre is not None:
+            query = query.where(Producto.nombre.ilike(f"%{nombre}%"))  # Búsqueda parcial insensible a mayúsculas
+        if precio is not None:
+            query = query.where(Producto.precio == precio)
+        elif precio_min is not None or precio_max is not None:
+            if precio_min is not None and precio_max is not None:
+                query = query.where(and_(Producto.precio >= precio_min, Producto.precio <= precio_max))
+            elif precio_min is not None:
+                query = query.where(Producto.precio >= precio_min)
+            elif precio_max is not None:
+                query = query.where(Producto.precio <= precio_max)
+        if categoria_id is not None:
+            query = query.where(Producto.categoria_id == categoria_id)
+        if stock is not None:
+            query = query.where(Producto.stock == stock)
+        elif stock_min is not None or stock_max is not None:
+            if stock_min is not None and stock_max is not None:
+                query = query.where(and_(Producto.stock >= stock_min, Producto.stock <= stock_max))
+            elif stock_min is not None:
+                query = query.where(Producto.stock >= stock_min)
+            elif stock_max is not None:
+                query = query.where(Producto.stock <= stock_max)
+        if activo is not None:
+            query = query.where(Producto.activo == activo)
+
+        result = await session.exec(query)
         productos = result.all()
         # Devolver productos con stock, precio, categoria
         result_list = []
