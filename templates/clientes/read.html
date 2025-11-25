@@ -72,5 +72,52 @@
             <!-- Aquí se mostrarán los clientes dinámicamente -->
         </div>
     </div>
+
+    <script>
+        async function loadClientes() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nombre = urlParams.get('nombre') || '';
+            const ciudad = urlParams.get('ciudad') || '';
+            const canal = urlParams.get('canal') || '';
+
+            const apiUrl = `/clientes/?nombre=${encodeURIComponent(nombre)}&ciudad=${encodeURIComponent(ciudad)}&canal=${encodeURIComponent(canal)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                const clientes = await response.json();
+
+                const listDiv = document.getElementById('clientes-list');
+                listDiv.innerHTML = '';
+
+                if (clientes.length === 0) {
+                    listDiv.innerHTML = '<p>No se encontraron clientes.</p>';
+                    return;
+                }
+
+                clientes.forEach(cliente => {
+                    const clienteDiv = document.createElement('div');
+                    clienteDiv.className = 'cliente-item';
+                    clienteDiv.innerHTML = `
+                        <h3>Cliente ID: ${cliente.id}</h3>
+                        <p><strong>Nombre:</strong> ${cliente.nombre}</p>
+                        <p><strong>Ciudad:</strong> ${cliente.ciudad}</p>
+                        <p><strong>Canal:</strong> ${cliente.canal}</p>
+                        ${cliente.media_url ? `<p><strong>Imagen:</strong> <img src="${cliente.media_url}" alt="${cliente.nombre}" style="max-width: 200px;"></p>` : ''}
+                        <hr>
+                    `;
+                    listDiv.appendChild(clienteDiv);
+                });
+            } catch (error) {
+                console.error('Error al cargar clientes:', error);
+                document.getElementById('clientes-list').innerHTML = '<p>Error al cargar los clientes.</p>';
+            }
+        }
+
+        // Cargar clientes al cargar la página
+        window.onload = loadClientes;
+    </script>
 </body>
 </html>
