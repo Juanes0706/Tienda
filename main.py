@@ -406,7 +406,12 @@ async def obtener_clientes(
     ciudad: Optional[str] = Query(None, description="Filtrar por ciudad parcial"),
     canal: Optional[str] = Query(None, description="Filtrar por canal (e.g., 'web', 'tienda')")
 ):
-    clientes = await crud.obtener_clientes(nombre=nombre, ciudad=ciudad, canal=canal)
+    # Convertir parámetros vacíos a None para evitar filtros innecesarios
+    nombre_filter = nombre if nombre else None
+    ciudad_filter = ciudad if ciudad else None
+    canal_filter = canal if canal else None
+
+    clientes = await crud.obtener_clientes(nombre=nombre_filter, ciudad=ciudad_filter, canal=canal_filter)
     return clientes
 
 @app.get("/clientes/{id}", response_model=ClienteResponse)
