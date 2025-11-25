@@ -8,11 +8,15 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "images") -> str:
+# --------------------------------------------------------------------------
+# ¡CAMBIO AQUÍ! bucket_name ahora es "tienda"
+# --------------------------------------------------------------------------
+async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "tienda") -> str: 
     """
     Uploads an image file to the Supabase storage bucket and returns the public URL.
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
+        # Aunque esto es una buena práctica, asumo que ya lo revisaste
         raise ValueError("Supabase URL or Key not configured in environment variables")
 
     file_extension = file.filename.split(".")[-1]
@@ -23,9 +27,11 @@ async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "images"
     file_content = await file.read()
 
     # Upload file to Supabase bucket
+    # Esta línea ahora usará "tienda"
     response = supabase.storage.from_(bucket_name).upload(unique_filename, file_content)
 
     if response.get("error"):
+        # Esto capturará cualquier otro error de Supabase
         raise RuntimeError(f"Error uploading file to Supabase: {response['error']['message']}")
 
     # Get public URL
