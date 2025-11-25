@@ -1,20 +1,19 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from models import Categoria, Producto
-from database import init_db
 import crud
-from schemas import CategoriaUpdate, ProductoUpdate, CategoriaConProductos, ProductoResponse, ProductoListResponse, RestarStock, CategoriaEliminada, ProductoEliminado, CategoriaCreate, ProductoCreate
+from schemas import (
+    CategoriaUpdate, ProductoUpdate, CategoriaConProductos, ProductoResponse,
+    ProductoListResponse, RestarStock, CategoriaEliminada, ProductoEliminado,
+    CategoriaCreate, ProductoCreate
+)
 from supabase_utils import upload_image_to_supabase
 from typing import Optional
 
 app = FastAPI(title="API Tienda con SQLModel")
 
-# Crear la base de datos al iniciar
-@app.on_event("startup")
-def startup_event():
-    init_db()
-
-
-# Endpoints de categorias
+# ---------------------------
+#  ENDPOINTS DE CATEGORÍAS
+# ---------------------------
 
 @app.post("/categorias/", response_model=Categoria)
 async def crear_categoria(categoria: CategoriaCreate):
@@ -25,7 +24,7 @@ async def crear_categoria(categoria: CategoriaCreate):
 
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias():
-    return await crud.obtener_categorias()    
+    return await crud.obtener_categorias()
 
 @app.get("/categorias/{id}", response_model=Categoria)
 async def obtener_categoria(id: int):
@@ -66,7 +65,9 @@ async def eliminar_categoria(id: int):
 async def obtener_categorias_eliminadas():
     return await crud.obtener_categorias_eliminadas()
 
-# Endpoints de productos
+# ---------------------------
+#  ENDPOINTS DE PRODUCTOS
+# ---------------------------
 
 @app.post("/productos/", response_model=Producto)
 async def crear_producto(
@@ -81,6 +82,7 @@ async def crear_producto(
     imagen_url = None
     if imagen:
         imagen_url = await upload_image_to_supabase(imagen)
+
     producto_data = ProductoCreate(
         nombre=nombre,
         descripcion=descripcion,
@@ -90,6 +92,7 @@ async def crear_producto(
         categoria_id=categoria_id,
         imagen_url=imagen_url
     )
+
     producto_creado = await crud.crear_producto(producto_data)
     if not producto_creado:
         raise HTTPException(status_code=400, detail="Producto no pudo ser creado")
@@ -101,8 +104,7 @@ async def obtener_productos():
 
 @app.get("/productos/eliminados", response_model=list[ProductoEliminado])
 async def obtener_productos_eliminados():
-    productos = await crud.obtener_productos_eliminados()
-    return productos
+    return await crud.obtener_productos_eliminados()
 
 @app.get("/productos/{id}", response_model=Producto)
 async def obtener_producto(id: int):
@@ -116,7 +118,7 @@ async def obtener_producto_con_categoria(id: int):
     producto = await crud.obtener_producto_con_categoria(id)
     if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto    
+    return producto
 
 @app.put("/productos/{id}", response_model=Producto)
 async def actualizar_producto(
@@ -132,6 +134,7 @@ async def actualizar_producto(
     imagen_url = None
     if imagen:
         imagen_url = await upload_image_to_supabase(imagen)
+
     producto_update_data = ProductoUpdate(
         nombre=nombre,
         descripcion=descripcion,
@@ -141,25 +144,25 @@ async def actualizar_producto(
         categoria_id=categoria_id,
         imagen_url=imagen_url
     )
+
     producto_actualizado = await crud.actualizar_producto(id, producto_update_data)
     if not producto_actualizado:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto_actualizado    
+    return producto_actualizado
 
 @app.patch("/productos/{id}/desactivar", response_model=Producto)
 async def desactivar_producto(id: int):
     producto = await crud.desactivar_producto(id)
     if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto    
+    return producto
 
 @app.patch("/productos/{id}/restar-stock", response_model=Producto)
 async def restar_stock(id: int, restar: RestarStock):
     producto = await crud.restar_stock(id, restar.cantidad)
     if not producto:
         raise HTTPException(status_code=400, detail="Producto no encontrado o stock insuficiente")
-    return producto    
-
+    return producto
 
 @app.delete("/productos/{id}")
 async def eliminar_producto(id: int):
