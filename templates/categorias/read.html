@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ver Categorías</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Inicio</a>
+        <div class="dropdown">
+            <button class="dropbtn">Categorías</button>
+            <div class="dropdown-content">
+                <a href="/categorias/create">Crear Categoría</a>
+                <a href="/categorias/read">Ver Categorías</a>
+                <a href="/categorias/update">Actualizar Categoría</a>
+                <a href="/categorias/delete">Eliminar Categoría</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Productos</button>
+            <div class="dropdown-content">
+                <a href="/productos/create">Crear Producto</a>
+                <a href="/productos/read">Ver Productos</a>
+                <a href="/productos/update">Actualizar Producto</a>
+                <a href="/productos/delete">Eliminar Producto</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Clientes</button>
+            <div class="dropdown-content">
+                <a href="/clientes/create">Crear Cliente</a>
+                <a href="/clientes/read">Ver Clientes</a>
+                <a href="/clientes/update">Actualizar Cliente</a>
+                <a href="/clientes/delete">Eliminar Cliente</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Ventas</button>
+            <div class="dropdown-content">
+                <a href="/ventas/create">Crear Venta</a>
+                <a href="/ventas/read">Ver Ventas</a>
+            </div>
+        </div>
+        <a href="/historial">Historial</a>
+        <a href="/developer-info">Información del Desarrollador</a>
+        <a href="/planning">Planificación</a>
+        <a href="/design">Diseño</a>
+        <a href="/informacion-del-proyecto">Información del Proyecto</a>
+    </nav>
+    <div class="container">
+        <h1>Categorías</h1>
+
+        <div class="filter-section">
+            <h2>Filtros</h2>
+            <form method="get" action="/categorias">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" />
+
+                <label for="activa">Estado:</label>
+                <select id="activa" name="activa">
+                    <option value="">Todos</option>
+                    <option value="true">Activa</option>
+                    <option value="false">Inactiva</option>
+                </select>
+
+                <button type="submit">Filtrar</button>
+            </form>
+        </div>
+
+        <div id="categorias-list">
+            <!-- Aquí se mostrarán las categorías dinámicamente -->
+        </div>
+    </div>
+</body>
+</html>

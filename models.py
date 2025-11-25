@@ -58,6 +58,12 @@ class Producto(SQLModel, table=True):
     # CORRECCIÓN: Usar "DetalleVenta" como string
     detalles_venta: List["DetalleVenta"] = Relationship(back_populates="producto")
 
+    # Relación many-to-many con clientes favoritos
+    clientes_favoritos: List["Cliente"] = Relationship(
+        back_populates="productos_favoritos",
+        link_model=ClienteProducto
+    )
+
 
 # --- Modelos de Venta ---
 
