@@ -144,9 +144,17 @@ async def crear_categoria(
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias(
     nombre: Optional[str] = Query(None, description="Filtrar por nombre parcial"),
-    activa: Optional[bool] = Query(None, description="Filtrar por estado activa")
+    activa: Optional[str] = Query(None, description="Filtrar por estado activa")
 ):
-    return await crud.obtener_categorias(nombre=nombre, activa=activa)
+    # Convertir el parámetro activa de str a bool o None
+    activa_bool = None
+    if activa is not None:
+        if activa.lower() in ('true', '1', 'yes'):
+            activa_bool = True
+        elif activa.lower() in ('false', '0', 'no'):
+            activa_bool = False
+        # Si está vacío o no reconocido, dejar como None
+    return await crud.obtener_categorias(nombre=nombre, activa=activa_bool)
 
 @app.get("/categorias/{id}", response_model=Categoria)
 async def obtener_categoria(id: int):

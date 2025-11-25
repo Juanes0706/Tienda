@@ -24,9 +24,19 @@ async def crear_categoria(categoria_data):
     except IntegrityError:
         return None
     
-async def obtener_categorias():
+async def obtener_categorias(nombre: Optional[str] = None, activa: Optional[bool] = None):
     async with AsyncSession(async_engine) as session:
-        result = await session.exec(select(Categoria).where(Categoria.activa == True, Categoria.deleted_at == None))
+        query = select(Categoria).where(Categoria.deleted_at == None)
+
+        if nombre is not None:
+            query = query.where(Categoria.nombre.ilike(f"%{nombre}%"))
+        if activa is not None:
+            query = query.where(Categoria.activa == activa)
+        else:
+            # Default to active categories if activa filter is not specified
+            query = query.where(Categoria.activa == True)
+
+        result = await session.exec(query)
         categorias = result.all()
         return categorias
     
