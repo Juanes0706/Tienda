@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Actualizar Cliente</title>
+    <title>Información del Desarrollador</title>
     <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
@@ -50,27 +50,38 @@
         <a href="/informacion-del-proyecto">Información del Proyecto</a>
     </nav>
     <div class="container">
-        <h1>Actualizar Cliente</h1>
+        <h1>Información del Desarrollador</h1>
 
-        <div class="form-section">
-            <form method="post" action="/clientes/update" enctype="multipart/form-data">
-                <label for="id">ID del Cliente:</label>
-                <input type="number" id="id" name="id" required />
+        <div class="developer-card">
+            <h2>Juan Esteban Tovar</h2>
+            <p><strong>Estudiante de Ingeniería de Sistemas</strong></p>
+            <p>Desarrollador apasionado por la tecnología y la innovación.</p>
+        </div>
 
-                <label for="nombre">Nombre del Cliente:</label>
-                <input type="text" id="nombre" name="nombre" />
+        <div class="developer-card">
+            <h2>Habilidades Técnicas</h2>
+            <ul>
+                <li><strong>Backend:</strong> Python, FastAPI, SQLAlchemy, PostgreSQL</li>
+                <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+                <li><strong>Herramientas:</strong> Git, Docker, Supabase</li>
+                <li><strong>Metodologías:</strong> Desarrollo Ágil, RESTful APIs</li>
+            </ul>
+        </div>
 
-                <label for="ciudad">Ciudad:</label>
-                <input type="text" id="ciudad" name="ciudad" />
+        <div class="developer-card">
+            <h2>Proyectos Destacados</h2>
+            <ul>
+                <li><strong>API de Tienda:</strong> Sistema completo de gestión de inventario con FastAPI</li>
+                <li><strong>Aplicaciones Web:</strong> Desarrollo de interfaces responsivas</li>
+                <li><strong>Integraciones:</strong> Conexión con bases de datos y servicios externos</li>
+            </ul>
+        </div>
 
-                <label for="canal">Canal:</label>
-                <input type="text" id="canal" name="canal" />
-
-                <label for="media_url">URL de Imagen:</label>
-                <input type="text" id="media_url" name="media_url" />
-
-                <button type="submit">Actualizar Cliente</button>
-            </form>
+        <div class="developer-card">
+            <h2>Contacto</h2>
+            <p><strong>Email:</strong> juan.tovar@example.com</p>
+            <p><strong>LinkedIn:</strong> linkedin.com/in/juan-tovar</p>
+            <p><strong>GitHub:</strong> github.com/juanes0706</p>
         </div>
     </div>
 </body>

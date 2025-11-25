@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from models import Categoria, Producto, Cliente, Venta # <- Nuevos modelos importados
 import crud
 from schemas import (
@@ -6,7 +8,7 @@ from schemas import (
     ProductoListResponse, RestarStock, CategoriaEliminada, ProductoEliminado,
     CategoriaCreate, ProductoCreate,
     # Nuevos esquemas de Cliente y Venta
-    ClienteCreate, ClienteUpdate, ClienteResponse, 
+    ClienteCreate, ClienteUpdate, ClienteResponse,
     VentaCreate, VentaResponse
 )
 from supabase_utils import upload_image_to_supabase
@@ -15,6 +17,10 @@ from database import init_db
 from datetime import datetime # Necesario para filtros de fecha
 
 app = FastAPI(title="API Tienda con SQLModel y Supabase")
+
+# Configurar archivos estáticos y templates
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 @app.on_event("startup")
 async def on_startup():
@@ -377,3 +383,87 @@ async def obtener_venta(id: int):
     if not venta:
         raise HTTPException(status_code=404, detail="Venta no encontrada")
     return venta
+
+# -----------------------------------------------------------------------
+#                       ENDPOINTS PARA SERVIR HTML
+# -----------------------------------------------------------------------
+
+@app.get("/")
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/categorias/create")
+async def categorias_create(request: Request):
+    return templates.TemplateResponse("categorias/create.html", {"request": request})
+
+@app.get("/categorias/read")
+async def categorias_read(request: Request):
+    return templates.TemplateResponse("categorias/read.html", {"request": request})
+
+@app.get("/categorias/update")
+async def categorias_update(request: Request):
+    return templates.TemplateResponse("categorias/update.html", {"request": request})
+
+@app.get("/categorias/delete")
+async def categorias_delete(request: Request):
+    return templates.TemplateResponse("categorias/delete.html", {"request": request})
+
+@app.get("/productos/create")
+async def productos_create(request: Request):
+    return templates.TemplateResponse("productos/create.html", {"request": request})
+
+@app.get("/productos/read")
+async def productos_read(request: Request):
+    return templates.TemplateResponse("productos/read.html", {"request": request})
+
+@app.get("/productos/update")
+async def productos_update(request: Request):
+    return templates.TemplateResponse("productos/update.html", {"request": request})
+
+@app.get("/productos/delete")
+async def productos_delete(request: Request):
+    return templates.TemplateResponse("productos/delete.html", {"request": request})
+
+@app.get("/clientes/create")
+async def clientes_create(request: Request):
+    return templates.TemplateResponse("clientes/create.html", {"request": request})
+
+@app.get("/clientes/read")
+async def clientes_read(request: Request):
+    return templates.TemplateResponse("clientes/read.html", {"request": request})
+
+@app.get("/clientes/update")
+async def clientes_update(request: Request):
+    return templates.TemplateResponse("clientes/update.html", {"request": request})
+
+@app.get("/clientes/delete")
+async def clientes_delete(request: Request):
+    return templates.TemplateResponse("clientes/delete.html", {"request": request})
+
+@app.get("/ventas/create")
+async def ventas_create(request: Request):
+    return templates.TemplateResponse("ventas/create.html", {"request": request})
+
+@app.get("/ventas/read")
+async def ventas_read(request: Request):
+    return templates.TemplateResponse("ventas/read.html", {"request": request})
+
+@app.get("/historial")
+async def historial(request: Request):
+    return templates.TemplateResponse("historial.html", {"request": request})
+
+@app.get("/developer-info")
+async def developer_info(request: Request):
+    return templates.TemplateResponse("developer-info.html", {"request": request})
+
+@app.get("/planning")
+async def planning(request: Request):
+    return templates.TemplateResponse("planning.html", {"request": request})
+
+@app.get("/design")
+async def design(request: Request):
+    return templates.TemplateResponse("design.html", {"request": request})
+
+@app.get("/informacion-del-proyecto")
+async def informacion_del_proyecto(request: Request):
+    return templates.TemplateResponse("informacion-del-proyecto.html", {"request": request})

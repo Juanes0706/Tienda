@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Actualizar Cliente</title>
+    <title>Ver Clientes</title>
     <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
@@ -50,14 +50,12 @@
         <a href="/informacion-del-proyecto">Información del Proyecto</a>
     </nav>
     <div class="container">
-        <h1>Actualizar Cliente</h1>
+        <h1>Clientes</h1>
 
-        <div class="form-section">
-            <form method="post" action="/clientes/update" enctype="multipart/form-data">
-                <label for="id">ID del Cliente:</label>
-                <input type="number" id="id" name="id" required />
-
-                <label for="nombre">Nombre del Cliente:</label>
+        <div class="filter-section">
+            <h2>Filtros</h2>
+            <form method="get" action="/clientes">
+                <label for="nombre">Nombre:</label>
                 <input type="text" id="nombre" name="nombre" />
 
                 <label for="ciudad">Ciudad:</label>
@@ -66,11 +64,12 @@
                 <label for="canal">Canal:</label>
                 <input type="text" id="canal" name="canal" />
 
-                <label for="media_url">URL de Imagen:</label>
-                <input type="text" id="media_url" name="media_url" />
-
-                <button type="submit">Actualizar Cliente</button>
+                <button type="submit">Filtrar</button>
             </form>
+        </div>
+
+        <div id="clientes-list">
+            <!-- Aquí se mostrarán los clientes dinámicamente -->
         </div>
     </div>
 </body>

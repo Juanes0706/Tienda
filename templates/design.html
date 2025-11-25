@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diseño</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Inicio</a>
+        <div class="dropdown">
+            <button class="dropbtn">Categorías</button>
+            <div class="dropdown-content">
+                <a href="/categorias/create">Crear Categoría</a>
+                <a href="/categorias/read">Ver Categorías</a>
+                <a href="/categorias/update">Actualizar Categoría</a>
+                <a href="/categorias/delete">Eliminar Categoría</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Productos</button>
+            <div class="dropdown-content">
+                <a href="/productos/create">Crear Producto</a>
+                <a href="/productos/read">Ver Productos</a>
+                <a href="/productos/update">Actualizar Producto</a>
+                <a href="/productos/delete">Eliminar Producto</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Clientes</button>
+            <div class="dropdown-content">
+                <a href="/clientes/create">Crear Cliente</a>
+                <a href="/clientes/read">Ver Clientes</a>
+                <a href="/clientes/update">Actualizar Cliente</a>
+                <a href="/clientes/delete">Eliminar Cliente</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Ventas</button>
+            <div class="dropdown-content">
+                <a href="/ventas/create">Crear Venta</a>
+                <a href="/ventas/read">Ver Ventas</a>
+            </div>
+        </div>
+        <a href="/historial">Historial</a>
+        <a href="/developer-info">Información del Desarrollador</a>
+        <a href="/planning">Planificación</a>
+        <a href="/design">Diseño</a>
+        <a href="/informacion-del-proyecto">Información del Proyecto</a>
+    </nav>
+    <div class="container">
+        <h1>Diseño del Proyecto</h1>
+
+        <div class="design-section">
+            <h2>Arquitectura del Sistema</h2>
+            <p>El sistema sigue una arquitectura cliente-servidor con separación clara entre frontend y backend.</p>
+
+            <div class="architecture-diagram">
+                <h3>Diagrama de Arquitectura</h3>
+                <ul>
+                    <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+                    <li><strong>Backend:</strong> FastAPI (Python)</li>
+                    <li><strong>Base de Datos:</strong> PostgreSQL</li>
+                    <li><strong>Almacenamiento:</strong> Supabase</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="design-section">
+            <h2>Base de Datos</h2>
+            <p>Modelo de datos relacional con las siguientes entidades principales:</p>
+
+            <div class="database-schema">
+                <h3>Esquema de Base de Datos</h3>
+                <ul>
+                    <li><strong>Categorías:</strong> id, nombre, descripción, activa, media_url, created_at, updated_at, deleted_at</li>
+                    <li><strong>Productos:</strong> id, nombre, descripción, precio, stock, activo, categoria_id, media_url, created_at, updated_at, deleted_at</li>
+                    <li><strong>Clientes:</strong> id, nombre, ciudad, canal, media_url, created_at, updated_at, deleted_at</li>
+                    <li><strong>Ventas:</strong> id, cliente_id, fecha, canal_venta, total, created_at, updated_at</li>
+                    <li><strong>Detalles de Venta:</strong> id, venta_id, producto_id, cantidad, precio_unitario, subtotal</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="design-section">
+            <h2>API REST</h2>
+            <p>Endpoints RESTful para todas las operaciones CRUD:</p>
+
+            <div class="api-endpoints">
+                <h3>Endpoints Principales</h3>
+                <ul>
+                    <li><code>GET /categorias</code> - Listar categorías</li>
+                    <li><code>POST /categorias</code> - Crear categoría</li>
+                    <li><code>PUT /categorias/{id}</code> - Actualizar categoría</li>
+                    <li><code>DELETE /categorias/{id}</code> - Eliminar categoría</li>
+                    <li><code>GET /productos</code> - Listar productos con filtros</li>
+                    <li><code>POST /productos</code> - Crear producto</li>
+                    <li><code>GET /clientes</code> - Listar clientes con filtros</li>
+                    <li><code>POST /ventas</code> - Crear venta</li>
+                    <li><code>GET /ventas</code> - Listar ventas con filtros</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="design-section">
+            <h2>Interfaz de Usuario</h2>
+            <p>Diseño responsivo con navegación intuitiva:</p>
+
+            <div class="ui-design">
+                <h3>Características de la UI</h3>
+                <ul>
+                    <li>Navbar con dropdowns para navegación</li>
+                    <li>Formularios para operaciones CRUD</li>
+                    <li>Filtros avanzados para listados</li>
+                    <li>Diseño responsivo para móviles y desktop</li>
+                    <li>Estilos consistentes con CSS</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
