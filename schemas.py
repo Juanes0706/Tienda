@@ -8,6 +8,7 @@ class CategoriaBase(BaseModel):
     nombre: constr(min_length=1, max_length=100)
     descripcion: Optional[str] = None
     activa: Optional[bool] = True
+    media_url: Optional[str] = None
 
 class CategoriaCreate(CategoriaBase):
     """Esquema para crear una categoría"""
@@ -18,10 +19,12 @@ class CategoriaUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     activa: Optional[bool] = None
+    media_url: Optional[str] = None
 
 class CategoriaResponse(CategoriaBase):
     """Esquema de respuesta que incluye ID y productos"""
     id: int
+    media_url: Optional[str] = None
 
     class Config:
         from_attributes = True

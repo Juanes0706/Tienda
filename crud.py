@@ -10,7 +10,8 @@ from sqlalchemy.orm import selectinload
 
 async def crear_categoria(categoria_data):
     try:
-        categoria = Categoria(**categoria_data.dict())
+        categoria_dict = categoria_data.dict()
+        categoria = Categoria(**categoria_dict)
         async with AsyncSession(async_engine) as session:
             session.add(categoria)
             await session.commit()
@@ -78,7 +79,8 @@ async def actualizar_categoria(id: int, categoria_update):
         result = await session.exec(select(Categoria).where(Categoria.id == id, Categoria.deleted_at == None))
         categoria = result.first()
         if categoria:
-            for key, value in categoria_update.dict(exclude_unset=True).items():
+            update_data = categoria_update.dict(exclude_unset=True)
+            for key, value in update_data.items():
                 setattr(categoria, key, value)
             await session.commit()
             await session.refresh(categoria)

@@ -2,11 +2,13 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
 
+
 class Categoria(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(index=True, unique=True)
     descripcion: Optional[str] = None
     activa: bool = Field(default=True)
+    media_url: Optional[str] = None
     deleted_at: Optional[datetime] = None
 
     productos: List["Producto"] = Relationship(back_populates="categoria")

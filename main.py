@@ -25,8 +25,23 @@ async def on_startup():
 # ---------------------------
 
 @app.post("/categorias/", response_model=Categoria)
-async def crear_categoria(categoria: CategoriaCreate):
-    categoria_creada = await crud.crear_categoria(categoria)
+async def crear_categoria(
+    nombre: str = Form(...),
+    descripcion: Optional[str] = Form(None),
+    activa: Optional[bool] = Form(True),
+    imagen: Optional[UploadFile] = File(None)
+):
+    imagen_url = None
+    if imagen and imagen.filename:
+        imagen_url = await upload_image_to_supabase(imagen)
+
+    categoria_data = CategoriaCreate(
+        nombre=nombre,
+        descripcion=descripcion,
+        activa=activa,
+        media_url=imagen_url
+    )
+    categoria_creada = await crud.crear_categoria(categoria_data)
     if not categoria_creada:
         raise HTTPException(status_code=400, detail="Categoría ya existe o error en la creación")
     return categoria_creada
@@ -50,8 +65,33 @@ async def obtener_categoria_con_productos(id: int):
     return categoria
 
 @app.put("/categorias/{id}", response_model=Categoria)
-async def actualizar_categoria(id: int, categoria_update: CategoriaUpdate):
-    categoria = await crud.actualizar_categoria(id, categoria_update)
+async def actualizar_categoria(
+    id: int,
+    nombre: Optional[str] = Form(None),
+    descripcion: Optional[str] = Form(None),
+    activa: Optional[bool] = Form(None),
+    imagen: Optional[UploadFile] = File(None)
+):
+    imagen_url = None
+    if imagen and imagen.filename:
+        imagen_url = await upload_image_to_supabase(imagen)
+
+    categoria_update_data = CategoriaUpdate(
+        nombre=nombre,
+        descripcion=descripcion,
+        activa=activa,
+        media_url=imagen_url
+    )
+
+    # Filtrar campos que son None para no sobrescribir valores existentes
+    categoria_update_data_filtered = categoria_update_data.dict(exclude_unset=True)
+
+    if imagen_url is not None:
+        categoria_update_data_filtered['media_url'] = imagen_url
+    elif imagen and imagen.filename == "":
+        categoria_update_data_filtered['media_url'] = None  # Permite eliminar URL existente
+
+    categoria = await crud.actualizar_categoria(id, CategoriaUpdate(**categoria_update_data_filtered))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return categoria
