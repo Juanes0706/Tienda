@@ -27,8 +27,10 @@ async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "Tienda"
     file_content = await file.read()
 
     # Upload file to Supabase bucket
-    # Esta línea ahora usará "tienda"
-    response = supabase.storage.from_(bucket_name).upload(unique_filename, file_content)
+    try:
+        response = supabase.storage.from_(bucket_name).upload(unique_filename, file_content)
+    except Exception as e:
+        raise RuntimeError(f"Failed to upload file to Supabase: {e}")
 
     # No need to check for error in response since upload raises exceptions on failure
 
