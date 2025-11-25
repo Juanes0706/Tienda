@@ -1,4 +1,4 @@
-from sqlmodel import select, SQLModel # <- [MODIFICADO] Se elimina la importación de 'Session'
+from sqlmodel import select, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from models import Categoria, Producto
 from database import async_engine
@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from typing import Optional
-
+from sqlalchemy import and_, or_ 
 # Funciones CRUD para Categoria
 
 async def crear_categoria(categoria_data):
