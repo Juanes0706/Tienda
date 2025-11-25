@@ -1,13 +1,16 @@
 from sqlmodel import select, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from models import Categoria, Producto
+from models import Categoria, Producto, Cliente, Venta, DetalleVenta 
 from database import async_engine
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import and_, or_ 
-# Funciones CRUD para Categoria
+
+# =======================================================================
+# 📦 Funciones CRUD para Categoria
+# =======================================================================
 
 async def crear_categoria(categoria_data):
     try:
@@ -54,6 +57,7 @@ async def obtener_categoria_con_productos(id: int):
                 "nombre": categoria.nombre,
                 "descripcion": categoria.descripcion,
                 "activa": categoria.activa,
+                "media_url": categoria.media_url,
                 "productos": [
                     {
                         "id": p.id,
@@ -63,6 +67,7 @@ async def obtener_categoria_con_productos(id: int):
                         "stock": p.stock,
                         "activo": p.activo,
                         "categoria_id": p.categoria_id,
+                        "media_url": p.media_url,
                         "categoria": {
                             "id": categoria.id,
                             "nombre": categoria.nombre,
@@ -99,8 +104,10 @@ async def desactivar_categoria(id: int):
             return categoria
         return None
 
-# Funciones CRUD para producto        
-
+# =======================================================================
+# 🏷️ Funciones CRUD para Producto
+# =======================================================================
+        
 async def crear_producto(producto_data):
     try:
         producto = Producto(**producto_data.dict())
@@ -125,7 +132,6 @@ async def obtener_productos(
     stock_max: Optional[int] = None,
     activo: Optional[bool] = None
 ):
-    from sqlalchemy import and_, or_
     async with AsyncSession(async_engine) as session:
         query = select(Producto, Categoria.nombre.label("categoria_nombre")).join(Categoria).where(Producto.deleted_at == None)
 
@@ -133,7 +139,7 @@ async def obtener_productos(
         if id is not None:
             query = query.where(Producto.id == id)
         if nombre is not None:
-            query = query.where(Producto.nombre.ilike(f"%{nombre}%"))  # Búsqueda parcial insensible a mayúsculas
+            query = query.where(Producto.nombre.ilike(f"%{nombre}%")) 
         if precio is not None:
             query = query.where(Producto.precio == precio)
         elif precio_min is not None or precio_max is not None:
@@ -227,7 +233,168 @@ async def restar_stock(id: int, cantidad: int):
             return producto
         return None
 
+# =======================================================================
+# 👤 Funciones CRUD para Cliente
+# =======================================================================
+
+async def crear_cliente(cliente_data):
+    """Crea un nuevo cliente."""
+    try:
+        cliente = Cliente(**cliente_data.dict())
+        async with AsyncSession(async_engine) as session:
+            session.add(cliente)
+            await session.commit()
+            await session.refresh(cliente)
+            return cliente
+    except Exception as e:
+        print(f"Error creando cliente: {e}")
+        return None
+
+async def obtener_clientes(
+    nombre: Optional[str] = None,
+    ciudad: Optional[str] = None,
+    canal: Optional[str] = None,
+):
+    """Obtiene clientes activos, con filtros opcionales."""
+    async with AsyncSession(async_engine) as session:
+        query = select(Cliente).where(Cliente.deleted_at == None)
+
+        if nombre is not None:
+            query = query.where(Cliente.nombre.ilike(f"%{nombre}%"))
+        if ciudad is not None:
+            query = query.where(Cliente.ciudad.ilike(f"%{ciudad}%"))
+        if canal is not None:
+            query = query.where(Cliente.canal == canal)
+
+        result = await session.exec(query)
+        clientes = result.all()
+        return clientes
+
+async def obtener_cliente(id: int):
+    """Obtiene un cliente por ID (activo)."""
+    async with AsyncSession(async_engine) as session:
+        result = await session.exec(select(Cliente).where(Cliente.id == id, Cliente.deleted_at == None))
+        cliente = result.first()
+        return cliente
+    
+async def actualizar_cliente(id: int, cliente_update):
+    """Actualiza los datos de un cliente."""
+    async with AsyncSession(async_engine) as session:
+        cliente = await session.get(Cliente, id)
+        if cliente and cliente.deleted_at is None:
+            update_data = cliente_update.dict(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(cliente, key, value)
+            await session.commit()
+            await session.refresh(cliente)
+            return cliente
+        return None
+
+async def eliminar_cliente(id: int):
+    """Realiza un borrado suave (soft delete) de un cliente."""
+    async with AsyncSession(async_engine) as session:
+        cliente = await session.get(Cliente, id)
+        if cliente and cliente.deleted_at is None:
+            cliente.deleted_at = datetime.now()
+            await session.commit()
+            await session.refresh(cliente)
+            return True
+        return False
+
+# =======================================================================
+# 🛒 Funciones CRUD para Venta (y DetalleVenta)
+# =======================================================================
+
+async def crear_venta(venta_data):
+    """
+    Crea una nueva venta y sus detalles, y actualiza el stock de los productos.
+    Asume que venta_data incluye una lista de 'detalles'.
+    """
+    async with AsyncSession(async_engine) as session:
+        try:
+            # 1. Validar y restar stock antes de crear la venta
+            for detalle in venta_data.detalles:
+                producto = await session.get(Producto, detalle.producto_id)
+                # Verifica que el producto exista, no esté eliminado y tenga suficiente stock
+                if not producto or producto.deleted_at is not None or producto.stock < detalle.cantidad:
+                    raise ValueError(f"Stock insuficiente o producto inválido ID {detalle.producto_id}")
+            
+            # 2. Crear la Venta (excluyendo la lista de detalles para la tabla Venta)
+            venta_dict = venta_data.dict(exclude={'detalles'})
+            venta = Venta(**venta_dict)
+            session.add(venta)
+            await session.flush() 
+            
+            # 3. Crear los Detalles de Venta y actualizar el stock
+            for detalle_data in venta_data.detalles:
+                # Restar stock
+                producto = await session.get(Producto, detalle_data.producto_id)
+                producto.stock -= detalle_data.cantidad
+                
+                # Crear DetalleVenta
+                detalle_dict = detalle_data.dict()
+                detalle_dict['venta_id'] = venta.id
+                detalle = DetalleVenta(**detalle_dict)
+                session.add(detalle)
+            
+            await session.commit()
+            
+            # Refrescar y cargar relaciones para la respuesta
+            await session.refresh(venta, attribute_names=['cliente', 'detalles'])
+            for detalle in venta.detalles:
+                await session.refresh(detalle, attribute_names=['producto'])
+            
+            return venta
+            
+        except ValueError as ve:
+            await session.rollback()
+            print(f"Error al procesar venta: {ve}")
+            return None
+        except Exception as e:
+            await session.rollback()
+            print(f"Error desconocido creando venta: {e}")
+            return None
+
+async def obtener_ventas(
+    cliente_id: Optional[int] = None,
+    canal_venta: Optional[str] = None,
+    fecha_inicio: Optional[datetime] = None,
+    fecha_fin: Optional[datetime] = None
+):
+    """Obtiene ventas, con filtros opcionales."""
+    async with AsyncSession(async_engine) as session:
+        query = select(Venta).options(selectinload(Venta.cliente), selectinload(Venta.detalles).selectinload(DetalleVenta.producto))
+
+        if cliente_id is not None:
+            query = query.where(Venta.cliente_id == cliente_id)
+        if canal_venta is not None:
+            query = query.where(Venta.canal_venta == canal_venta)
+        if fecha_inicio is not None:
+            query = query.where(Venta.fecha_venta >= fecha_inicio)
+        if fecha_fin is not None:
+            query = query.where(Venta.fecha_venta <= fecha_fin)
+
+        result = await session.exec(query)
+        ventas = result.all()
+        return ventas
+
+async def obtener_venta(id: int):
+    """Obtiene una venta específica por ID."""
+    async with AsyncSession(async_engine) as session:
+        query = select(Venta).where(Venta.id == id).options(
+            selectinload(Venta.cliente), 
+            selectinload(Venta.detalles).selectinload(DetalleVenta.producto)
+        )
+        result = await session.exec(query)
+        venta = result.first()
+        return venta
+
+# =======================================================================
+# 🗑️ Funciones de Historial de Eliminados (Soft Delete)
+# =======================================================================
+
 async def obtener_categorias_eliminadas():
+    """Obtiene la lista de categorías con borrado suave."""
     async with AsyncSession(async_engine) as session:
         result = await session.exec(select(Categoria).where(Categoria.deleted_at != None))
         categorias = result.all()
@@ -238,11 +405,13 @@ async def obtener_categorias_eliminadas():
                 "nombre": cat.nombre,
                 "descripcion": cat.descripcion,
                 "activa": cat.activa,
+                "media_url": cat.media_url, 
                 "deleted_at": cat.deleted_at
             })
         return result_list
 
 async def obtener_productos_eliminados():
+    """Obtiene la lista de productos con borrado suave."""
     async with AsyncSession(async_engine) as session:
         result = await session.exec(select(Producto).where(Producto.deleted_at != None))
         productos = result.all()
@@ -256,7 +425,25 @@ async def obtener_productos_eliminados():
                 "stock": prod.stock,
                 "activo": prod.activo,
                 "categoria_id": prod.categoria_id,
-                "categoria": None,
+                "categoria": None, 
+                "media_url": prod.media_url, 
                 "deleted_at": prod.deleted_at
+            })
+        return result_list
+
+async def obtener_clientes_eliminados():
+    """Obtiene la lista de clientes con borrado suave."""
+    async with AsyncSession(async_engine) as session:
+        result = await session.exec(select(Cliente).where(Cliente.deleted_at != None))
+        clientes = result.all()
+        result_list = []
+        for cli in clientes:
+            result_list.append({
+                "id": cli.id,
+                "nombre": cli.nombre,
+                "ciudad": cli.ciudad,
+                "canal": cli.canal,
+                "media_url": cli.media_url,
+                "deleted_at": cli.deleted_at
             })
         return result_list
