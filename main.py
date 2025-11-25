@@ -8,8 +8,17 @@ from schemas import (
 )
 from supabase_utils import upload_image_to_supabase
 from typing import Optional
+from database import init_db # <- ¡NUEVA IMPORTACIÓN CLAVE!
 
 app = FastAPI(title="API Tienda con SQLModel")
+
+@app.on_event("startup")
+async def on_startup():
+    """
+    Inicializa la base de datos (crea tablas si no existen) 
+    al iniciar la aplicación.
+    """
+    await init_db() # <- Llamada a la función asíncrona de database.py
 
 # ---------------------------
 #  ENDPOINTS DE CATEGORÍAS
@@ -33,7 +42,7 @@ async def obtener_categoria(id: int):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return categoria
 
-@app.get("/categorias/{id}/productos")
+@app.get("/categorias/{id}/productos", response_model=CategoriaConProductos)
 async def obtener_categoria_con_productos(id: int):
     categoria = await crud.obtener_categoria_con_productos(id)
     if not categoria:
@@ -41,11 +50,11 @@ async def obtener_categoria_con_productos(id: int):
     return categoria
 
 @app.put("/categorias/{id}", response_model=Categoria)
-async def actualizar_categoria(id: int, categoria: CategoriaUpdate):
-    categoria_actualizada = await crud.actualizar_categoria(id, categoria)
-    if not categoria_actualizada:
+async def actualizar_categoria(id: int, categoria_update: CategoriaUpdate):
+    categoria = await crud.actualizar_categoria(id, categoria_update)
+    if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return categoria_actualizada
+    return categoria
 
 @app.patch("/categorias/{id}/desactivar", response_model=Categoria)
 async def desactivar_categoria(id: int):
@@ -56,31 +65,32 @@ async def desactivar_categoria(id: int):
 
 @app.delete("/categorias/{id}")
 async def eliminar_categoria(id: int):
-    eliminado = await crud.eliminar_categoria(id)
-    if not eliminado:
+    eliminada = await crud.eliminar_categoria(id)
+    if not eliminada:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return {"mensaje": "Categoría eliminada correctamente"}
+    return {"message": "Categoría eliminada (soft delete) exitosamente"}
 
-@app.get("/categorias/eliminadas")
+@app.get("/categorias/eliminadas", response_model=list[CategoriaEliminada])
 async def obtener_categorias_eliminadas():
     return await crud.obtener_categorias_eliminadas()
 
-# ---------------------------
+# --------------------------
 #  ENDPOINTS DE PRODUCTOS
-# ---------------------------
+# --------------------------
 
 @app.post("/productos/", response_model=Producto)
 async def crear_producto(
     nombre: str = Form(...),
     descripcion: Optional[str] = Form(None),
     precio: float = Form(...),
-    stock: int = Form(...),
-    activo: bool = Form(True),
+    stock: int = Form(0),
+    activo: Optional[bool] = Form(True),
     categoria_id: int = Form(...),
     imagen: Optional[UploadFile] = File(None)
 ):
     imagen_url = None
-    if imagen:
+    if imagen and imagen.filename:
+        # Aquí se asume que upload_image_to_supabase devuelve una URL
         imagen_url = await upload_image_to_supabase(imagen)
 
     producto_data = ProductoCreate(
@@ -90,21 +100,17 @@ async def crear_producto(
         stock=stock,
         activo=activo,
         categoria_id=categoria_id,
-        imagen_url=imagen_url
+        media_url=imagen_url
     )
-
+    
     producto_creado = await crud.crear_producto(producto_data)
     if not producto_creado:
-        raise HTTPException(status_code=400, detail="Producto no pudo ser creado")
+        raise HTTPException(status_code=400, detail="Error en la creación del producto")
     return producto_creado
 
 @app.get("/productos/", response_model=list[ProductoListResponse])
 async def obtener_productos():
     return await crud.obtener_productos()
-
-@app.get("/productos/eliminados", response_model=list[ProductoEliminado])
-async def obtener_productos_eliminados():
-    return await crud.obtener_productos_eliminados()
 
 @app.get("/productos/{id}", response_model=Producto)
 async def obtener_producto(id: int):
@@ -118,7 +124,9 @@ async def obtener_producto_con_categoria(id: int):
     producto = await crud.obtener_producto_con_categoria(id)
     if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto
+    
+    # Asignar la categoría al esquema de respuesta
+    return ProductoResponse.model_validate(producto)
 
 @app.put("/productos/{id}", response_model=Producto)
 async def actualizar_producto(
@@ -132,7 +140,8 @@ async def actualizar_producto(
     imagen: Optional[UploadFile] = File(None)
 ):
     imagen_url = None
-    if imagen:
+    # Solo actualiza la URL si se subió un nuevo archivo
+    if imagen and imagen.filename: 
         imagen_url = await upload_image_to_supabase(imagen)
 
     producto_update_data = ProductoUpdate(
@@ -142,31 +151,4 @@ async def actualizar_producto(
         stock=stock,
         activo=activo,
         categoria_id=categoria_id,
-        imagen_url=imagen_url
-    )
-
-    producto_actualizado = await crud.actualizar_producto(id, producto_update_data)
-    if not producto_actualizado:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto_actualizado
-
-@app.patch("/productos/{id}/desactivar", response_model=Producto)
-async def desactivar_producto(id: int):
-    producto = await crud.desactivar_producto(id)
-    if not producto:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return producto
-
-@app.patch("/productos/{id}/restar-stock", response_model=Producto)
-async def restar_stock(id: int, restar: RestarStock):
-    producto = await crud.restar_stock(id, restar.cantidad)
-    if not producto:
-        raise HTTPException(status_code=400, detail="Producto no encontrado o stock insuficiente")
-    return producto
-
-@app.delete("/productos/{id}")
-async def eliminar_producto(id: int):
-    eliminado = await crud.eliminar_producto(id)
-    if not eliminado:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return {"mensaje": "Producto eliminado correctamente"}
+        media_url=imagen

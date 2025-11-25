@@ -1,4 +1,4 @@
-from sqlmodel import select, Session, SQLModel
+from sqlmodel import select, SQLModel # <- [MODIFICADO] Se elimina la importación de 'Session'
 from sqlmodel.ext.asyncio.session import AsyncSession
 from models import Categoria, Producto
 from database import async_engine
@@ -215,4 +215,3 @@ async def obtener_productos_eliminados():
                 "deleted_at": prod.deleted_at
             })
         return result_list
-
