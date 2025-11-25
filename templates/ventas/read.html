@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ver Categorías</title>
+    <title>Ver Ventas</title>
     <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
@@ -50,73 +50,88 @@
         <a href="/informacion-del-proyecto">Información del Proyecto</a>
     </nav>
     <div class="container">
-        <h1>Categorías</h1>
+        <h1>Ventas</h1>
 
         <div class="filter-section">
             <h2>Filtros</h2>
-            <form method="get" action="/categorias/read">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" name="nombre" />
+            <form method="get" action="/ventas/read">
+                <label for="cliente_id">ID de Cliente:</label>
+                <input type="number" id="cliente_id" name="cliente_id" />
 
-                <label for="activa">Estado:</label>
-                <select id="activa" name="activa">
+                <label for="canal">Canal:</label>
+                <select id="canal" name="canal">
                     <option value="">Todos</option>
-                    <option value="true">Activa</option>
-                    <option value="false">Inactiva</option>
+                    <option value="presencial">Presencial</option>
+                    <option value="virtual">Virtual</option>
                 </select>
+
+                <label for="fecha_inicio">Fecha Inicio:</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" />
+
+                <label for="fecha_fin">Fecha Fin:</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" />
 
                 <button type="submit">Filtrar</button>
             </form>
         </div>
 
-        <div id="categorias-list">
-            <!-- Aquí se mostrarán las categorías dinámicamente -->
+        <div id="ventas-list">
+            <!-- Aquí se mostrarán las ventas dinámicamente -->
         </div>
     </div>
 
     <script>
-        async function loadCategorias() {
+        async function loadVentas() {
             const urlParams = new URLSearchParams(window.location.search);
-            const nombre = urlParams.get('nombre') || '';
-            const activa = urlParams.get('activa') || '';
+            const cliente_id = urlParams.get('cliente_id') || '';
+            const canal = urlParams.get('canal') || '';
+            const fecha_inicio = urlParams.get('fecha_inicio') || '';
+            const fecha_fin = urlParams.get('fecha_fin') || '';
 
-            const apiUrl = `/categorias/?nombre=${encodeURIComponent(nombre)}&activa=${encodeURIComponent(activa)}`;
+            const apiUrl = `/ventas/?cliente_id=${encodeURIComponent(cliente_id)}&canal=${encodeURIComponent(canal)}&fecha_inicio=${encodeURIComponent(fecha_inicio)}&fecha_fin=${encodeURIComponent(fecha_fin)}`;
 
             try {
                 const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
                 }
-                const categorias = await response.json();
+                const ventas = await response.json();
 
-                const listDiv = document.getElementById('categorias-list');
+                const listDiv = document.getElementById('ventas-list');
                 listDiv.innerHTML = '';
 
-                if (categorias.length === 0) {
-                    listDiv.innerHTML = '<p>No se encontraron categorías.</p>';
+                if (ventas.length === 0) {
+                    listDiv.innerHTML = '<p>No se encontraron ventas.</p>';
                     return;
                 }
 
-                categorias.forEach(categoria => {
-                    const categoriaDiv = document.createElement('div');
-                    categoriaDiv.className = 'categoria-item';
-                    categoriaDiv.innerHTML = `
-                        <h3>${categoria.nombre}</h3>
-                        <p><strong>Descripción:</strong> ${categoria.descripcion || 'Sin descripción'}</p>
-                        <p><strong>Activa:</strong> ${categoria.activa ? 'Sí' : 'No'}</p>
-                        ${categoria.media_url ? `<img src="${categoria.media_url}" alt="${categoria.nombre}" style="max-width: 200px; max-height: 200px;" />` : ''}
+                ventas.forEach(venta => {
+                    const ventaDiv = document.createElement('div');
+                    ventaDiv.className = 'venta-item';
+                    ventaDiv.innerHTML = `
+                        <h3>Venta ID: ${venta.id}</h3>
+                        <p><strong>Cliente:</strong> ${venta.cliente.nombre} (${venta.cliente.ciudad})</p>
+                        <p><strong>Canal:</strong> ${venta.canal}</p>
+                        <p><strong>Fecha:</strong> ${new Date(venta.fecha).toLocaleString()}</p>
+                        <p><strong>Total:</strong> $${venta.total.toFixed(2)}</p>
+                        <h4>Detalles:</h4>
+                        <ul>
+                            ${venta.detalles.map(detalle => `
+                                <li>${detalle.producto.nombre} - Cantidad: ${detalle.cantidad} - Precio: $${detalle.precio_unitario.toFixed(2)} - Subtotal: $${detalle.subtotal.toFixed(2)}</li>
+                            `).join('')}
+                        </ul>
                         <hr>
                     `;
-                    listDiv.appendChild(categoriaDiv);
+                    listDiv.appendChild(ventaDiv);
                 });
             } catch (error) {
-                console.error('Error al cargar categorías:', error);
-                document.getElementById('categorias-list').innerHTML = '<p>Error al cargar las categorías.</p>';
+                console.error('Error al cargar ventas:', error);
+                document.getElementById('ventas-list').innerHTML = '<p>Error al cargar las ventas.</p>';
             }
         }
 
-        // Cargar categorías al cargar la página
-        window.onload = loadCategorias;
+        // Cargar ventas al cargar la página
+        window.onload = loadVentas;
     </script>
 </body>
 </html>

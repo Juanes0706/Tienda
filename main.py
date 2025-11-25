@@ -255,28 +255,45 @@ async def crear_producto(
 
 @app.get("/productos/", response_model=list[ProductoListResponse])
 async def obtener_productos(
-    id: Optional[int] = Query(None),
+    id: Optional[str] = Query(None),
     nombre: Optional[str] = Query(None),
-    precio: Optional[float] = Query(None),
-    precio_min: Optional[float] = Query(None),
-    precio_max: Optional[float] = Query(None),
-    categoria_id: Optional[int] = Query(None),
-    stock: Optional[int] = Query(None),
-    stock_min: Optional[int] = Query(None),
-    stock_max: Optional[int] = Query(None),
-    activo: Optional[bool] = Query(None)
+    precio: Optional[str] = Query(None),
+    precio_min: Optional[str] = Query(None),
+    precio_max: Optional[str] = Query(None),
+    categoria_id: Optional[str] = Query(None),
+    stock: Optional[str] = Query(None),
+    stock_min: Optional[str] = Query(None),
+    stock_max: Optional[str] = Query(None),
+    activo: Optional[str] = Query(None)
 ):
+    # Convertir parámetros de str a tipos apropiados
+    id_int = int(id) if id and id.isdigit() else None
+    precio_float = float(precio) if precio else None
+    precio_min_float = float(precio_min) if precio_min else None
+    precio_max_float = float(precio_max) if precio_max else None
+    categoria_id_int = int(categoria_id) if categoria_id and categoria_id.isdigit() else None
+    stock_int = int(stock) if stock and stock.isdigit() else None
+    stock_min_int = int(stock_min) if stock_min and stock_min.isdigit() else None
+    stock_max_int = int(stock_max) if stock_max and stock_max.isdigit() else None
+    activo_bool = None
+    if activo is not None:
+        if activo.lower() in ('true', '1', 'yes'):
+            activo_bool = True
+        elif activo.lower() in ('false', '0', 'no'):
+            activo_bool = False
+        # Si está vacío o no reconocido, dejar como None
+
     return await crud.obtener_productos(
-        id=id,
+        id=id_int,
         nombre=nombre,
-        precio=precio,
-        precio_min=precio_min,
-        precio_max=precio_max,
-        categoria_id=categoria_id,
-        stock=stock,
-        stock_min=stock_min,
-        stock_max=stock_max,
-        activo=activo
+        precio=precio_float,
+        precio_min=precio_min_float,
+        precio_max=precio_max_float,
+        categoria_id=categoria_id_int,
+        stock=stock_int,
+        stock_min=stock_min_int,
+        stock_max=stock_max_int,
+        activo=activo_bool
     )
 
 @app.get("/productos/{id}", response_model=Producto)
