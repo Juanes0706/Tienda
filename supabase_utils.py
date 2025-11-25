@@ -11,7 +11,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # --------------------------------------------------------------------------
 # ¡CAMBIO AQUÍ! bucket_name ahora es "tienda"
 # --------------------------------------------------------------------------
-async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "tienda") -> str: 
+async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "Tienda") -> str: 
     """
     Uploads an image file to the Supabase storage bucket and returns the public URL.
     """
