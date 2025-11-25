@@ -17,6 +17,11 @@ class Categoria(SQLModel, table=True):
     productos: List["Producto"] = Relationship(back_populates="categoria")
 
 
+class ClienteProducto(SQLModel, table=True):
+    cliente_id: int = Field(foreign_key="cliente.id", primary_key=True)
+    producto_id: int = Field(foreign_key="producto.id", primary_key=True)
+
+
 class Cliente(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(index=True)
@@ -27,6 +32,12 @@ class Cliente(SQLModel, table=True):
 
     # CORRECCIÓN: Usar "Venta" como string
     ventas: List["Venta"] = Relationship(back_populates="cliente")
+
+    # Relación many-to-many con productos favoritos
+    productos_favoritos: List["Producto"] = Relationship(
+        back_populates="clientes_favoritos",
+        link_model=ClienteProducto
+    )
 
 
 class Producto(SQLModel, table=True):
