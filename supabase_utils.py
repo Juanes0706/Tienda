@@ -11,7 +11,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # --------------------------------------------------------------------------
 # ¡CAMBIO AQUÍ! bucket_name ahora es "tienda"
 # --------------------------------------------------------------------------
-async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "Tienda") -> str: 
+async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "Tienda") -> str:
     """
     Uploads an image file to the Supabase storage bucket and returns the public URL.
     """
@@ -30,13 +30,10 @@ async def upload_image_to_supabase(file: UploadFile, bucket_name: str = "Tienda"
     # Esta línea ahora usará "tienda"
     response = supabase.storage.from_(bucket_name).upload(unique_filename, file_content)
 
-    if response.get("error"):
-        # Esto capturará cualquier otro error de Supabase
-        raise RuntimeError(f"Error uploading file to Supabase: {response['error']['message']}")
+    # No need to check for error in response since upload raises exceptions on failure
 
-    # Get public URL
-    public_url_response = supabase.storage.from_(bucket_name).get_public_url(unique_filename)
-    public_url = public_url_response.get("publicUrl")
+    # Get public URL (returns string)
+    public_url = supabase.storage.from_(bucket_name).get_public_url(unique_filename)
     if not public_url:
         raise RuntimeError("Failed to get public URL after upload")
 
