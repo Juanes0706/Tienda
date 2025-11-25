@@ -151,4 +151,44 @@ async def actualizar_producto(
         stock=stock,
         activo=activo,
         categoria_id=categoria_id,
-        media_url=imagen
+        media_url=imagen_url # Esto solo actualizará si se proporcionó una imagen o es None
+    )
+    
+    # Filtrar campos que son None para no sobrescribir valores existentes
+    producto_update_data_filtered = producto_update_data.dict(exclude_unset=True)
+
+    # Si se subió una imagen, su URL debe ser incluida explícitamente si existe
+    if imagen_url is not None:
+         producto_update_data_filtered['media_url'] = imagen_url
+    elif imagen and imagen.filename == "": # Caso donde se envía el campo pero vacío
+         producto_update_data_filtered['media_url'] = None # Permite eliminar la URL existente
+
+    producto_actualizado = await crud.actualizar_producto(id, ProductoUpdate(**producto_update_data_filtered))
+    if not producto_actualizado:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return producto_actualizado
+
+@app.patch("/productos/{id}/desactivar", response_model=Producto)
+async def desactivar_producto(id: int):
+    producto = await crud.desactivar_producto(id)
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return producto
+
+@app.patch("/productos/{id}/restar-stock", response_model=Producto)
+async def restar_stock(id: int, restar: RestarStock):
+    producto = await crud.restar_stock(id, restar.cantidad)
+    if not producto:
+        raise HTTPException(status_code=400, detail="Producto no encontrado o stock insuficiente")
+    return producto
+
+@app.delete("/productos/{id}")
+async def eliminar_producto(id: int):
+    eliminado = await crud.eliminar_producto(id)
+    if not eliminado:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return {"message": "Producto eliminado (soft delete) exitosamente"}
+
+@app.get("/productos/eliminados", response_model=list[ProductoEliminado])
+async def obtener_productos_eliminados():
+    return await crud.obtener_productos_eliminados()
