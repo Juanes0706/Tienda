@@ -73,5 +73,50 @@
             <!-- Aquí se mostrarán las categorías dinámicamente -->
         </div>
     </div>
+
+    <script>
+        async function loadCategorias() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nombre = urlParams.get('nombre') || '';
+            const activa = urlParams.get('activa') || '';
+
+            const apiUrl = `/categorias/?nombre=${encodeURIComponent(nombre)}&activa=${encodeURIComponent(activa)}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                const categorias = await response.json();
+
+                const listDiv = document.getElementById('categorias-list');
+                listDiv.innerHTML = '';
+
+                if (categorias.length === 0) {
+                    listDiv.innerHTML = '<p>No se encontraron categorías.</p>';
+                    return;
+                }
+
+                categorias.forEach(categoria => {
+                    const categoriaDiv = document.createElement('div');
+                    categoriaDiv.className = 'categoria-item';
+                    categoriaDiv.innerHTML = `
+                        <h3>${categoria.nombre}</h3>
+                        <p><strong>Descripción:</strong> ${categoria.descripcion || 'Sin descripción'}</p>
+                        <p><strong>Activa:</strong> ${categoria.activa ? 'Sí' : 'No'}</p>
+                        ${categoria.media_url ? `<img src="${categoria.media_url}" alt="${categoria.nombre}" style="max-width: 200px; max-height: 200px;" />` : ''}
+                        <hr>
+                    `;
+                    listDiv.appendChild(categoriaDiv);
+                });
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+                document.getElementById('categorias-list').innerHTML = '<p>Error al cargar las categorías.</p>';
+            }
+        }
+
+        // Cargar categorías al cargar la página
+        window.onload = loadCategorias;
+    </script>
 </body>
 </html>
