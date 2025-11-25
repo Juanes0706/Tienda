@@ -5,6 +5,7 @@ from database import async_engine
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
+from typing import Optional
 
 # Funciones CRUD para Categoria
 
