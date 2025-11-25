@@ -43,8 +43,8 @@ async def categorias_create(request: Request):
     return templates.TemplateResponse("categorias/create.html", {"request": request})
 
 @app.get("/categorias/read")
-async def categorias_read():
-    return templates.TemplateResponse("categorias/read.html")
+async def categorias_read(request: Request):
+    return templates.TemplateResponse("categorias/read.html", {"request": request})
 
 @app.get("/categorias/update")
 async def categorias_update(request: Request):
