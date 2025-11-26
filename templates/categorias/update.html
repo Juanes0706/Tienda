@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Actualizar Categoría</title>
     <link rel="stylesheet" href="/static/css/style.css" />
+    <style>
+        /* Estilos específicos para la sección de búsqueda/actualización */
+        .search-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .update-form-container {
+            margin-top: 20px;
+            display: none; /* Oculto inicialmente */
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -52,81 +66,122 @@
     <div class="container">
         <h1>Actualizar Categoría</h1>
 
-        <div class="form-section">
-            <form id="updateCategoriaForm" enctype="multipart/form-data">
-                <label for="id">ID de la Categoría:</label>
-                <input type="number" id="id" name="id" required />
+        <div class="search-section">
+            <h2>Seleccionar Categoría</h2>
+            <form id="searchForm">
+                <label for="search_id">ID de la Categoría:</label>
+                <input type="number" id="search_id" name="id" required value="{{ categoria.id if categoria else '' }}" />
+                <button type="submit" id="btnBuscar">Buscar</button>
+            </form>
+            <div id="searchMessage" style="margin-top: 10px;">
+                {% if categoria and categoria.id %}
+                    <p style="color: green;">Categoría {{ categoria.id }} cargada. Modifique los campos y haga clic en Actualizar.</p>
+                {% elif categoria == False %}
+                    <p style="color: red;">Categoría no encontrada.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="update-form-container" id="updateContainer">
+            <form id="updateForm" enctype="multipart/form-data">
+                <input type="hidden" id="id" name="id" value="{{ categoria.id if categoria else '' }}" />
 
                 <label for="nombre">Nombre de la Categoría:</label>
-                <input type="text" id="nombre" name="nombre" />
+                <input type="text" id="nombre" name="nombre" value="{{ categoria.nombre if categoria else '' }}" />
 
                 <label for="descripcion">Descripción:</label>
-                <input type="text" id="descripcion" name="descripcion" />
+                <input type="text" id="descripcion" name="descripcion" value="{{ categoria.descripcion if categoria else '' }}" />
 
-                <label>Estado Activo:</label>
-                <input type="radio" id="activa_true" name="activa" value="True" />
-                <label for="activa_true">Sí</label>
-                <input type="radio" id="activa_false" name="activa" value="False" />
-                <label for="activa_false">No</label>
+                <label>Estado Activa:</label>
+                <input type="radio" id="activa_true" name="activa" value="True" {% if categoria and categoria.activa == True %}checked{% endif %} />
+                <label for="activa_true">Activa</label>
+                <input type="radio" id="activa_false" name="activa" value="False" {% if categoria and categoria.activa == False %}checked{% endif %} />
+                <label for="activa_false">Inactiva</label>
                 <br>
-                
-                <label for="imagen">Imagen:</label>
+
+                <label for="imagen">Imagen (dejar vacío para mantener):</label>
                 <input type="file" id="imagen" name="imagen" accept="image/*" />
+                <p id="currentImage">
+                    {% if categoria and categoria.media_url %}
+                        Imagen actual: <a href="{{ categoria.media_url }}" target="_blank">Ver</a>
+                    {% endif %}
+                </p>
 
                 <button type="submit">Actualizar Categoría</button>
             </form>
         </div>
-
-        <div id="message"></div>
+        
+        <div id="updateMessage" style="margin-top: 10px;"></div>
     </div>
 
     <script>
-        document.getElementById('updateCategoriaForm').addEventListener('submit', async function(e) {
+        const searchForm = document.getElementById('searchForm');
+        const updateContainer = document.getElementById('updateContainer');
+        const updateForm = document.getElementById('updateForm');
+        const searchMessage = document.getElementById('searchMessage');
+        const updateMessage = document.getElementById('updateMessage');
+
+        // Mostrar formulario de actualización si hay datos precargados
+        if (document.getElementById('id').value) {
+            updateContainer.style.display = 'block';
+        }
+
+        // 1. Manejar la búsqueda (Redirigir con query parameter)
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('search_id').value;
+            if (id) {
+                // Esto hará que FastAPI cargue los datos al recargar la página
+                window.location.href = `/categorias/update?id=${id}`;
+            }
+        });
+
+        // 2. Manejar la actualización (Envío PUT a la API)
+        updateForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const id = document.getElementById('id').value;
             const formData = new FormData(this);
-            const id = formData.get('id');
 
-            if (!id) {
-                document.getElementById('message').innerHTML = '<p style="color: red;">Por favor ingrese el ID de la categoría.</p>';
-                return;
+            // Eliminar el campo de la imagen si no se seleccionó un archivo nuevo
+            const imagenFile = document.getElementById('imagen').files[0];
+            if (!imagenFile) {
+                formData.delete('imagen');
+            } else if (imagenFile.size === 0) {
+                // Si el usuario selecciona y luego deselecciona, enviar un campo vacío para borrar la imagen existente
+                formData.set('imagen', '');
             }
 
-            // Crear un nuevo FormData sin el ID para enviarlo en el body (PUT espera el ID en la URL)
-            const updateFormData = new FormData();
-            for (const pair of formData.entries()) {
-                if (pair[0] !== 'id') {
-                    // Solo añade campos que tengan un valor, a menos que sea la imagen
-                    if (pair[1] || pair[0] === 'imagen') {
-                        updateFormData.append(pair[0], pair[1]);
-                    }
-                }
-            }
 
             try {
                 const response = await fetch(`/categorias/${id}`, {
                     method: 'PUT',
-                    body: updateFormData
+                    body: formData // FastAPI manejará el FormData y los Forms/Files
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    document.getElementById('message').innerHTML = '<p style="color: green;">Categoría actualizada exitosamente. ID: ' + result.id + ', Nombre: ' + result.nombre + '</p>';
-                    // Opcional: Resetear los campos del formulario, manteniendo el ID si se desea
-                    // document.getElementById('nombre').value = '';
-                    // document.getElementById('descripcion').value = '';
-                    // document.getElementById('activa_true').checked = false;
-                    // document.getElementById('activa_false').checked = false;
-                    // document.getElementById('imagen').value = '';
+                    updateMessage.innerHTML = '<p style="color: green;">✅ Categoría actualizada exitosamente. ID: ' + result.id + '</p>';
+                    // Recargar los datos actualizados en el formulario
+                    setTimeout(() => {
+                        window.location.href = `/categorias/update?id=${id}`;
+                    }, 1500);
+                    
                 } else {
                     const error = await response.json();
-                    document.getElementById('message').innerHTML = `<p style="color: red;">Error: ${error.detail}</p>`;
+                    updateMessage.innerHTML = `<p style="color: red;">❌ Error al actualizar: ${error.detail}</p>`;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('message').innerHTML = '<p style="color: red;">Error al actualizar la categoría.</p>';
+                updateMessage.innerHTML = '<p style="color: red;">❌ Error de conexión al servidor.</p>';
             }
         });
+        
+        // Mostrar el contenedor de actualización si ya hay un ID cargado en la URL al iniciar
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('id')) {
+            updateContainer.style.display = 'block';
+        }
     </script>
 </body>
 </html>
