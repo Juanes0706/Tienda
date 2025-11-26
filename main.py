@@ -205,9 +205,10 @@ async def obtener_categoria_con_productos(id: int):
     return categoria
 
 # Endpoint para actualizar categoría (usando PUT con Form data y upload)
-@app.put("/categorias/{id}", response_model=Categoria)
-async def actualizar_categoria(
-    id: int,
+@app.post("/categorias/update")
+async def actualizar_categoria_post(
+    request: Request,
+    id: int = Form(...),
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
     activa: Optional[bool] = Form(None),
@@ -235,7 +236,8 @@ async def actualizar_categoria(
     categoria = await crud.actualizar_categoria(id, CategoriaUpdate(**categoria_update_data_filtered))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return categoria
+
+    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria, "success": True})
 
 @app.patch("/categorias/{id}/desactivar", response_model=Categoria)
 async def desactivar_categoria(id: int):
@@ -258,7 +260,7 @@ async def eliminar_categoria(id: int):
 
 # Endpoint para la acción de actualizar producto (POST from HTML form)
 @app.post("/productos/update")
-async def actualizar_producto_from_form(
+async def actualizar_producto_post(
     request: Request,
     id: int = Form(...),
     nombre: Optional[str] = Form(None),
@@ -269,7 +271,6 @@ async def actualizar_producto_from_form(
     categoria_id: Optional[int] = Form(None),
     imagen: Optional[UploadFile] = File(None)
 ):
-    # Este endpoint solo actualiza y devuelve la vista HTML
     imagen_url = None
     if imagen and imagen.filename:
         imagen_url = await upload_image_to_supabase(imagen)
@@ -294,8 +295,7 @@ async def actualizar_producto_from_form(
     producto_actualizado = await crud.actualizar_producto(id, ProductoUpdate(**producto_update_data_filtered))
     if not producto_actualizado:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    
-    # Recargar producto para mostrar la última versión en la vista
+
     updated_producto = await crud.obtener_producto(id)
     return templates.TemplateResponse("productos/update.html", {"request": request, "producto": updated_producto, "success": True})
 
