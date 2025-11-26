@@ -144,6 +144,36 @@ async def crear_categoria(
 
     return templates.TemplateResponse("categorias/create.html", {"request": request, "success": True, "categoria": categoria_creada})
 
+@app.post("/productos/create")
+async def crear_producto(
+    request: Request,
+    nombre: str = Form(...),
+    descripcion: Optional[str] = Form(None),
+    precio: float = Form(...),
+    stock: int = Form(0),
+    activo: Optional[bool] = Form(True),
+    categoria_id: int = Form(...),
+    imagen: Optional[UploadFile] = File(None)
+):
+    imagen_url = None
+    if imagen and imagen.filename:
+        imagen_url = await upload_image_to_supabase(imagen)
+
+    producto_data = ProductoCreate(
+        nombre=nombre,
+        descripcion=descripcion,
+        precio=precio,
+        stock=stock,
+        activo=activo,
+        categoria_id=categoria_id,
+        media_url=imagen_url
+    )
+    producto_creado = await crud.crear_producto(producto_data)
+    if not producto_creado:
+        raise HTTPException(status_code=400, detail="Error en la creación del producto")
+
+    return templates.TemplateResponse("productos/create.html", {"request": request, "success": True, "producto": producto_creado})
+
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias(
     nombre: Optional[str] = Query(None, description="Filtrar por nombre parcial"),
@@ -182,18 +212,22 @@ async def obtener_categoria_con_productos(id: int):
 from fastapi import Request  # ensure import Request at top if not already
 
 @app.get("/categorias/update")
-async def categorias_update(request: Request, id: Optional[int] = None):
+async def categorias_update(request: Request):
+    id_str = request.query_params.get("id")
     categoria_data = None
-    if id is not None:
-        categoria_data = await crud.obtener_categoria(id)
-        if not categoria_data:
-            raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    if id_str:
+        try:
+            id_int = int(id_str)
+            categoria_data = await crud.obtener_categoria(id_int)
+            if not categoria_data:
+                raise HTTPException(status_code=404, detail="Categoría no encontrada")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="ID inválido")
     return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data})
 
-@app.post("/categorias/update")
+@app.put("/categorias/{id}", response_model=Categoria)
 async def actualizar_categoria(
-    request: Request,
-    id: int = Form(...),
+    id: int,
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
     activa: Optional[bool] = Form(None),
@@ -210,7 +244,6 @@ async def actualizar_categoria(
         media_url=imagen_url
     )
 
-    # Lógica para manejar si se envía imagen vacía para borrar URL
     categoria_update_data_filtered = categoria_update_data.model_dump(exclude_unset=True)
 
     if imagen_url is not None:
@@ -221,9 +254,7 @@ async def actualizar_categoria(
     categoria = await crud.actualizar_categoria(id, CategoriaUpdate(**categoria_update_data_filtered))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    # After update, re-render update page with updated data and success info
-    updated_categoria = await crud.obtener_categoria(id)
-    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": updated_categoria, "success": True})
+    return categoria
 
 @app.patch("/categorias/{id}/desactivar", response_model=Categoria)
 async def desactivar_categoria(id: int):
@@ -244,22 +275,32 @@ async def eliminar_categoria(id: int):
 #                       ENDPOINTS DE PRODUCTOS
 # -----------------------------------------------------------------------
 
-@app.post("/productos/", response_model=Producto)
-async def crear_producto(
-    nombre: str = Form(...),
+@app.get("/productos/update")
+async def productos_update(request: Request, id: Optional[int] = None):
+    producto_data = None
+    if id is not None:
+        producto_data = await crud.obtener_producto(id)
+        if not producto_data:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data})
+
+@app.post("/productos/update")
+async def actualizar_producto(
+    request: Request,
+    id: int = Form(...),
+    nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
-    precio: float = Form(...),
-    stock: int = Form(0),
-    activo: Optional[bool] = Form(True),
-    categoria_id: int = Form(...),
+    precio: Optional[float] = Form(None),
+    stock: Optional[int] = Form(None),
+    activo: Optional[bool] = Form(None),
+    categoria_id: Optional[int] = Form(None),
     imagen: Optional[UploadFile] = File(None)
 ):
     imagen_url = None
     if imagen and imagen.filename:
-        # Upload image file to Supabase and get the URL
         imagen_url = await upload_image_to_supabase(imagen)
 
-    producto_data = ProductoCreate(
+    producto_update_data = ProductoUpdate(
         nombre=nombre,
         descripcion=descripcion,
         precio=precio,
@@ -269,10 +310,18 @@ async def crear_producto(
         media_url=imagen_url
     )
     
-    producto_creado = await crud.crear_producto(producto_data)
-    if not producto_creado:
-        raise HTTPException(status_code=400, detail="Error en la creación del producto")
-    return producto_creado
+    producto_update_data_filtered = producto_update_data.model_dump(exclude_unset=True)
+
+    if imagen_url is not None:
+          producto_update_data_filtered['media_url'] = imagen_url
+    elif imagen and imagen.filename == "":
+          producto_update_data_filtered['media_url'] = None 
+
+    producto_actualizado = await crud.actualizar_producto(id, ProductoUpdate(**producto_update_data_filtered))
+    if not producto_actualizado:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    updated_producto = await crud.obtener_producto(id)
+    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": updated_producto, "success": True})
 
 @app.get("/productos/", response_model=list[ProductoListResponse])
 async def obtener_productos(
