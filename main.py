@@ -179,9 +179,21 @@ async def obtener_categoria_con_productos(id: int):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return categoria
 
-@app.put("/categorias/{id}", response_model=Categoria)
+from fastapi import Request  # ensure import Request at top if not already
+
+@app.get("/categorias/update")
+async def categorias_update(request: Request, id: Optional[int] = None):
+    categoria_data = None
+    if id is not None:
+        categoria_data = await crud.obtener_categoria(id)
+        if not categoria_data:
+            raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data})
+
+@app.post("/categorias/update")
 async def actualizar_categoria(
-    id: int,
+    request: Request,
+    id: int = Form(...),
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
     activa: Optional[bool] = Form(None),
@@ -209,7 +221,9 @@ async def actualizar_categoria(
     categoria = await crud.actualizar_categoria(id, CategoriaUpdate(**categoria_update_data_filtered))
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return categoria
+    # After update, re-render update page with updated data and success info
+    updated_categoria = await crud.obtener_categoria(id)
+    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": updated_categoria, "success": True})
 
 @app.patch("/categorias/{id}/desactivar", response_model=Categoria)
 async def desactivar_categoria(id: int):
