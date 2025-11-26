@@ -239,6 +239,7 @@ async def crear_producto(
 ):
     imagen_url = None
     if imagen and imagen.filename:
+        # Upload image file to Supabase and get the URL
         imagen_url = await upload_image_to_supabase(imagen)
 
     producto_data = ProductoCreate(
