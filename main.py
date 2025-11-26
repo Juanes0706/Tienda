@@ -50,16 +50,16 @@ async def categorias_read(request: Request):
 async def categorias_update(request: Request):
     id_str = request.query_params.get("id")
     categoria_data = None
+    error_message = None
     if id_str:
         try:
             id_int = int(id_str)
             categoria_data = await crud.obtener_categoria(id_int)
             if not categoria_data:
-                # Nota: En un entorno de producción, manejarías el 404 de manera más elegante en la plantilla
-                raise HTTPException(status_code=404, detail="Categoría no encontrada")
+                error_message = "Categoría no encontrada"
         except ValueError:
-            raise HTTPException(status_code=400, detail="ID inválido")
-    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data})
+            error_message = "ID inválido"
+    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data, "error_message": error_message})
 
 @app.get("/categorias/delete")
 async def categorias_delete(request: Request):
@@ -76,11 +76,13 @@ async def productos_read(request: Request):
 @app.get("/productos/update")
 async def productos_update(request: Request, id: Optional[int] = None):
     producto_data = None
+    error_message = None
     if id is not None:
         producto_data = await crud.obtener_producto(id)
         if not producto_data:
-            raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data})
+            error_message = "Producto no encontrado"
+    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data, "error_message": error_message})
+
 
 @app.get("/productos/delete")
 async def productos_delete(request: Request):
@@ -96,11 +98,18 @@ async def clientes_read(request: Request):
 
 @app.get("/clientes/update")
 async def clientes_update(request: Request):
-    # La lógica de carga de datos para el HTML se implementa generalmente
-    # en el JavaScript del template, que llama al endpoint API.
-    # Si quieres precargar un cliente, usarías un parámetro 'id' de query.
-    # Por simplicidad, se deja la versión que solo renderiza el template.
-    return templates.TemplateResponse("clientes/update.html", {"request": request})
+    cliente_data = None
+    error_message = None
+    id_str = request.query_params.get("id")
+    if id_str:
+        try:
+            id_int = int(id_str)
+            cliente_data = await crud.obtener_cliente(id_int)
+            if not cliente_data:
+                error_message = "Cliente no encontrado"
+        except ValueError:
+            error_message = "ID inválido"
+    return templates.TemplateResponse("clientes/update.html", {"request": request, "cliente": cliente_data, "error_message": error_message})
 
 @app.get("/clientes/delete")
 async def clientes_delete(request: Request):
