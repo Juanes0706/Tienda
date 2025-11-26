@@ -118,8 +118,11 @@ async def informacion_del_proyecto(request: Request):
 #                       ENDPOINTS DE CATEGORÍAS
 # -----------------------------------------------------------------------
 
-@app.post("/categorias/", response_model=Categoria)
+from fastapi import Request  # ensure import Request at top if not already
+
+@app.post("/categorias/")
 async def crear_categoria(
+    request: Request,
     nombre: str = Form(...),
     descripcion: Optional[str] = Form(None),
     activa: Optional[bool] = Form(True),
@@ -127,7 +130,6 @@ async def crear_categoria(
 ):
     imagen_url = None
     if imagen and imagen.filename:
-        # Aquí se asume que upload_image_to_supabase acepta el file (UploadFile)
         imagen_url = await upload_image_to_supabase(imagen)
 
     categoria_data = CategoriaCreate(
@@ -139,8 +141,8 @@ async def crear_categoria(
     categoria_creada = await crud.crear_categoria(categoria_data)
     if not categoria_creada:
         raise HTTPException(status_code=400, detail="Categoría ya existe o error en la creación")
-    # After creation, return the create category HTML page again with success message or similar
-    return templates.TemplateResponse("categorias/create.html", {"request": Request, "success": True, "categoria": categoria_creada})
+
+    return templates.TemplateResponse("categorias/create.html", {"request": request, "success": True, "categoria": categoria_creada})
 
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias(
