@@ -49,16 +49,19 @@ async def categorias_read(request: Request):
 @app.get("/categorias/update")
 async def categorias_update(request: Request):
     id_str = request.query_params.get("id")
+    error_message = None
+    categoria_data = None
     if not id_str:
-        return {"detail": "ID de categoría requerido"}, 400
-    try:
-        id_int = int(id_str)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="ID inválido")
-    categoria_data = await crud.obtener_categoria(id_int)
-    if not categoria_data:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data})
+        error_message = "ID de categoría requerido"
+    else:
+        try:
+            id_int = int(id_str)
+            categoria_data = await crud.obtener_categoria(id_int)
+            if not categoria_data:
+                error_message = "Categoría no encontrada"
+        except ValueError:
+            error_message = "ID inválido"
+    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data, "error_message": error_message})
 
 @app.get("/categorias/delete")
 async def categorias_delete(request: Request):
@@ -74,12 +77,15 @@ async def productos_read(request: Request):
 
 @app.get("/productos/update")
 async def productos_update(request: Request, id: Optional[int] = None):
+    error_message = None
+    producto_data = None
     if id is None:
-        return {"detail": "ID de producto requerido"}, 400
-    producto_data = await crud.obtener_producto(id)
-    if not producto_data:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data})
+        error_message = "ID de producto requerido"
+    else:
+        producto_data = await crud.obtener_producto(id)
+        if not producto_data:
+            error_message = "Producto no encontrado"
+    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data, "error_message": error_message})
 
 
 @app.get("/productos/delete")
