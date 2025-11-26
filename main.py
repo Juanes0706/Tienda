@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from models import Categoria, Producto, Cliente, Venta # <- Nuevos modelos importados
+from models import Categoria, Producto, Cliente, Venta
 import crud
 from schemas import (
     CategoriaUpdate, ProductoUpdate, CategoriaConProductos, ProductoResponse,
@@ -14,7 +14,7 @@ from schemas import (
 from supabase_utils import upload_image_to_supabase
 from typing import Optional, List
 from database import init_db
-from datetime import datetime # Necesario para filtros de fecha
+from datetime import datetime
 
 app = FastAPI(title="API Tienda con SQLModel y Supabase")
 
@@ -52,7 +52,8 @@ async def categorias_update(request: Request):
     error_message = None
     categoria_data = None
     if not id_str:
-        error_message = "ID de categoría requerido"
+        # Se permite cargar la página sin ID
+        pass 
     else:
         try:
             id_int = int(id_str)
@@ -80,7 +81,7 @@ async def productos_update(request: Request, id: Optional[int] = None):
     error_message = None
     producto_data = None
     if id is None:
-        error_message = "ID de producto requerido"
+        error_message = None # No es un error si se carga sin ID inicialmente
     else:
         producto_data = await crud.obtener_producto(id)
         if not producto_data:
@@ -210,11 +211,10 @@ async def obtener_categoria_con_productos(id: int):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return categoria
 
-# Endpoint para actualizar categoría (usando PUT con Form data y upload)
-@app.post("/categorias/update")
-async def actualizar_categoria_post(
-    request: Request,
-    id: int = Form(...),
+# Endpoint para actualizar categoría (API: PUT para REST)
+@app.put("/categorias/{id}", response_model=Categoria)
+async def actualizar_categoria(
+    id: int,
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
     activa: Optional[bool] = Form(None),
@@ -243,7 +243,7 @@ async def actualizar_categoria_post(
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
 
-    return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria, "success": True})
+    return categoria # Devuelve JSON
 
 @app.patch("/categorias/{id}/desactivar", response_model=Categoria)
 async def desactivar_categoria(id: int):
@@ -264,46 +264,7 @@ async def eliminar_categoria(id: int):
 #                       ENDPOINTS DE PRODUCTOS
 # -----------------------------------------------------------------------
 
-# Endpoint para la acción de actualizar producto (POST from HTML form)
-@app.post("/productos/update")
-async def actualizar_producto_post(
-    request: Request,
-    id: int = Form(...),
-    nombre: Optional[str] = Form(None),
-    descripcion: Optional[str] = Form(None),
-    precio: Optional[float] = Form(None),
-    stock: Optional[int] = Form(None),
-    activo: Optional[bool] = Form(None),
-    categoria_id: Optional[int] = Form(None),
-    imagen: Optional[UploadFile] = File(None)
-):
-    imagen_url = None
-    if imagen and imagen.filename:
-        imagen_url = await upload_image_to_supabase(imagen)
-
-    producto_update_data = ProductoUpdate(
-        nombre=nombre,
-        descripcion=descripcion,
-        precio=precio,
-        stock=stock,
-        activo=activo,
-        categoria_id=categoria_id,
-        media_url=imagen_url
-    )
-    
-    producto_update_data_filtered = producto_update_data.model_dump(exclude_unset=True)
-
-    if imagen_url is not None:
-          producto_update_data_filtered['media_url'] = imagen_url
-    elif imagen and imagen.filename == "":
-          producto_update_data_filtered['media_url'] = None 
-
-    producto_actualizado = await crud.actualizar_producto(id, ProductoUpdate(**producto_update_data_filtered))
-    if not producto_actualizado:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
-
-    updated_producto = await crud.obtener_producto(id)
-    return templates.TemplateResponse("productos/update.html", {"request": request, "producto": updated_producto, "success": True})
+# ELIMINADO: Endpoint para la acción de actualizar producto (POST /productos/update)
 
 
 # Endpoint para crear producto (usando Form data y upload)
@@ -402,7 +363,7 @@ async def obtener_producto_con_categoria(id: int):
     
     return ProductoResponse.model_validate(producto)
 
-# Endpoint PUT para actualización de producto (API)
+# Endpoint PUT para actualización de producto (API, devuelve JSON)
 @app.put("/productos/{id}", response_model=Producto)
 async def actualizar_producto(
     id: int,
