@@ -74,10 +74,11 @@
                 <button type="submit" id="btnBuscar">Buscar</button>
             </form>
             <div id="searchMessage" style="margin-top: 10px;">
-                {% if categoria and categoria.id %}
-                    <p style="color: green;">Categoría {{ categoria.id }} cargada. Modifique los campos y haga clic en Actualizar.</p>
-                {% elif categoria == False %}
-                    <p style="color: red;">Categoría no encontrada.</p>
+                {# Lógica corregida para mostrar el error_message o la confirmación de carga #}
+                {% if error_message %}
+                    <p style="color: red;">❌ {{ error_message }}</p>
+                {% elif categoria and categoria.id %}
+                    <p style="color: green;">✅ Categoría {{ categoria.id }} cargada. Modifique los campos y haga clic en Actualizar.</p>
                 {% endif %}
             </div>
         </div>

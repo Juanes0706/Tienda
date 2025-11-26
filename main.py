@@ -52,16 +52,20 @@ async def categorias_update(request: Request):
     error_message = None
     categoria_data = None
     if not id_str:
-        # Se permite cargar la página sin ID
+        # Permite cargar la página sin ID
         pass 
     else:
         try:
             id_int = int(id_str)
             categoria_data = await crud.obtener_categoria(id_int)
             if not categoria_data:
-                error_message = "Categoría no encontrada"
+                # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
+                error_message = f"La Categoría con ID {id_int} no fue encontrada."
+            # ================================================
         except ValueError:
-            error_message = "ID inválido"
+            # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
+            error_message = "ID inválido. Debe ser un número entero."
+            # ================================================
     return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data, "error_message": error_message})
 
 @app.get("/categorias/delete")
@@ -83,9 +87,14 @@ async def productos_update(request: Request, id: Optional[int] = None):
     if id is None:
         error_message = None # No es un error si se carga sin ID inicialmente
     else:
+        # Note: Si 'id' no puede convertirse a int (por ejemplo, id='abc'), 
+        # FastAPI ya maneja esto como un error 422 antes de llegar a esta función.
+        # Asumimos que si llega aquí, 'id' es None o un int válido.
         producto_data = await crud.obtener_producto(id)
         if not producto_data:
-            error_message = "Producto no encontrado"
+            # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
+            error_message = f"El Producto con ID {id} no fue encontrado."
+            # ================================================
     return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data, "error_message": error_message})
 
 
@@ -263,9 +272,6 @@ async def eliminar_categoria(id: int):
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE PRODUCTOS
 # -----------------------------------------------------------------------
-
-# ELIMINADO: Endpoint para la acción de actualizar producto (POST /productos/update)
-
 
 # Endpoint para crear producto (usando Form data y upload)
 @app.post("/productos/") # Cambiado a /productos/ para ser más RESTful
