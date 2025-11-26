@@ -139,7 +139,8 @@ async def crear_categoria(
     categoria_creada = await crud.crear_categoria(categoria_data)
     if not categoria_creada:
         raise HTTPException(status_code=400, detail="Categoría ya existe o error en la creación")
-    return categoria_creada
+    # After creation, return the create category HTML page again with success message or similar
+    return templates.TemplateResponse("categorias/create.html", {"request": Request, "success": True, "categoria": categoria_creada})
 
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias(
