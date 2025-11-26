@@ -54,13 +54,43 @@
 
         <div class="delete-section">
             <h2>Seleccionar Cliente a Eliminar</h2>
-            <form method="post" action="/clientes/delete">
+            <form id="deleteForm">
                 <label for="id">ID del Cliente:</label>
                 <input type="number" id="id" name="id" required />
 
                 <button type="submit">Eliminar Cliente</button>
             </form>
+            <div id="message"></div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('id').value;
+            if (!id) {
+                document.getElementById('message').innerHTML = '<p style="color: red;">Por favor ingrese el ID del cliente.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/clientes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    document.getElementById('message').innerHTML = '<p style="color: green;">Cliente eliminado exitosamente.</p>';
+                    document.getElementById('deleteForm').reset();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('message').innerHTML = `<p style="color: red;">Error: ${error.detail}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('message').innerHTML = '<p style="color: red;">Error al eliminar el cliente.</p>';
+            }
+        });
+    </script>
 </body>
 </html>
