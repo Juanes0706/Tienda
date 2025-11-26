@@ -32,11 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
             productoDiv.classList.add('result-item');
 
             productoDiv.innerHTML = `
-                <h3>\${producto.nombre} \${producto.activo ? '' : '(Inactivo)'}</h3>
-                <p><strong>Descripción:</strong> \${producto.descripcion || 'N/A'}</p>
-                <p><strong>Precio:</strong> \$\${producto.precio.toFixed(2)}</p>
-                <p><strong>Stock:</strong> \${producto.stock}</p>
-                <p><strong>Categoría:</strong> \${producto.categoria || 'N/A'}</p>
+                <h3>${producto.nombre} ${producto.activo ? '' : '(Inactivo)'}</h3>
+                <img src="${producto.media_url || '/static/img/no-image.png'}" alt="${producto.nombre}" style="max-width:150px; max-height:150px;" />
+                <p><strong>Descripción:</strong> ${producto.descripcion || 'N/A'}</p>
+                <p><strong>Precio:</strong> $${producto.precio.toFixed(2)}</p>
+                <p><strong>Stock:</strong> ${producto.stock}</p>
+                <p><strong>Categoría:</strong> ${producto.categoria || 'N/A'}</p>
             `;
             productosList.appendChild(productoDiv);
         });
