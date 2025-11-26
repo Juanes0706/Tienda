@@ -376,7 +376,7 @@ async def obtener_productos_eliminados():
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE CLIENTES 👤 (NUEVOS)
 # -----------------------------------------------------------------------
-
+s 
 @app.post("/clientes/", response_model=ClienteResponse)
 async def crear_cliente(
     nombre: str = Form(...),
