@@ -74,9 +74,10 @@
                 <button type="submit" id="btnBuscar">Buscar</button>
             </form>
             <div id="searchMessage" style="margin-top: 10px;">
-                {# Lógica corregida para mostrar el error_message o la confirmación de carga #}
+                {# Lógica MODIFICADA: Si hay error_message (ID no encontrado), mostrarlo #}
                 {% if error_message %}
                     <p style="color: red;">❌ {{ error_message }}</p>
+                {# Si no hay error y se encontró el producto, mostrar confirmación #}
                 {% elif producto and producto.id %}
                     <p style="color: green;">✅ Producto {{ producto.id }} cargado. Modifique los campos y haga clic en Actualizar.</p>
                 {% endif %}

@@ -74,7 +74,7 @@
                 <button type="submit" id="btnBuscar">Buscar</button>
             </form>
             <div id="searchMessage" style="margin-top: 10px;">
-                {# Lógica corregida para mostrar el error_message o la confirmación de carga #}
+                {# Lógica corregida para mostrar el error_message (si existe) o la confirmación de carga #}
                 {% if error_message %}
                     <p style="color: red;">❌ {{ error_message }}</p>
                 {% elif categoria and categoria.id %}
