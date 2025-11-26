@@ -156,6 +156,12 @@ async def obtener_categorias(
         # Si está vacío o no reconocido, dejar como None
     return await crud.obtener_categorias(nombre=nombre, activa=activa_bool)
 
+# === CORRECCIÓN: MOVEMOS LA RUTA ESPECÍFICA ANTES DE LA RUTA CON {id} ===
+@app.get("/categorias/eliminadas", response_model=list[CategoriaEliminada])
+async def obtener_categorias_eliminadas():
+    return await crud.obtener_categorias_eliminadas()
+# =======================================================================
+
 @app.get("/categorias/{id}", response_model=Categoria)
 async def obtener_categoria(id: int):
     categoria = await crud.obtener_categoria(id)
@@ -216,9 +222,6 @@ async def eliminar_categoria(id: int):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return {"message": "Categoría eliminada (soft delete) exitosamente"}
 
-@app.get("/categorias/eliminadas", response_model=list[CategoriaEliminada])
-async def obtener_categorias_eliminadas():
-    return await crud.obtener_categorias_eliminadas()
 
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE PRODUCTOS
@@ -296,6 +299,12 @@ async def obtener_productos(
         activo=activo_bool
     )
 
+# === CORRECCIÓN: MOVEMOS LA RUTA ESPECÍFICA ANTES DE LA RUTA CON {id} ===
+@app.get("/productos/eliminados", response_model=list[ProductoEliminado])
+async def obtener_productos_eliminados():
+    return await crud.obtener_productos_eliminados()
+# =======================================================================
+
 @app.get("/productos/{id}", response_model=Producto)
 async def obtener_producto(id: int):
     producto = await crud.obtener_producto(id)
@@ -369,9 +378,6 @@ async def eliminar_producto(id: int):
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return {"message": "Producto eliminado (soft delete) exitosamente"}
 
-@app.get("/productos/eliminados", response_model=list[ProductoEliminado])
-async def obtener_productos_eliminados():
-    return await crud.obtener_productos_eliminados()
 
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE CLIENTES 👤 (NUEVOS)
@@ -412,6 +418,12 @@ async def obtener_clientes(
 
     clientes = await crud.obtener_clientes(nombre=nombre_filter, ciudad=ciudad_filter, canal=canal_filter)
     return clientes
+
+# === CORRECCIÓN: MOVEMOS LA RUTA ESPECÍFICA ANTES DE LA RUTA CON {id} ===
+@app.get("/clientes/eliminados", response_model=list[ClienteResponse])
+async def obtener_clientes_eliminados():
+    return await crud.obtener_clientes_eliminados()
+# =======================================================================
 
 @app.get("/clientes/{id}", response_model=ClienteResponse)
 async def obtener_cliente(id: int):
@@ -458,9 +470,6 @@ async def eliminar_cliente(id: int):
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return {"message": "Cliente eliminado (soft delete) exitosamente"}
 
-@app.get("/clientes/eliminados", response_model=list[ClienteResponse])
-async def obtener_clientes_eliminados():
-    return await crud.obtener_clientes_eliminados()
 
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE VENTAS 🛒 (NUEVOS)
