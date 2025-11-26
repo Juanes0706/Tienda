@@ -73,5 +73,61 @@
             </div>
         </div>
     </div>
+
+    <script>
+    async function fetchHistorial() {
+        try {
+            const categoriasResponse = await fetch('/categorias/eliminadas');
+            const categorias = await categoriasResponse.json();
+
+            const productosResponse = await fetch('/productos/eliminados');
+            const productos = await productosResponse.json();
+
+            const clientesResponse = await fetch('/clientes/eliminados');
+            const clientes = await clientesResponse.json();
+
+            const categoriasDiv = document.getElementById('categorias-eliminadas');
+            const productosDiv = document.getElementById('productos-eliminados');
+            const clientesDiv = document.getElementById('clientes-eliminados');
+
+            if (categorias.length === 0) {
+                categoriasDiv.innerHTML = '<p>No hay categorías eliminadas.</p>';
+            } else {
+                categoriasDiv.innerHTML = '';
+                categorias.forEach(cat => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<p>ID: ${cat.id} | Nombre: ${cat.nombre} | Descripción: ${cat.descripcion || 'N/A'} | Fecha Eliminación: ${cat.deleted_at || 'N/A'}</p>`;
+                    categoriasDiv.appendChild(div);
+                });
+            }
+
+            if (productos.length === 0) {
+                productosDiv.innerHTML = '<p>No hay productos eliminados.</p>';
+            } else {
+                productosDiv.innerHTML = '';
+                productos.forEach(prod => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<p>ID: ${prod.id} | Nombre: ${prod.nombre} | Precio: ${prod.precio} | Fecha Eliminación: ${prod.deleted_at || 'N/A'}</p>`;
+                    productosDiv.appendChild(div);
+                });
+            }
+
+            if (clientes.length === 0) {
+                clientesDiv.innerHTML = '<p>No hay clientes eliminados.</p>';
+            } else {
+                clientesDiv.innerHTML = '';
+                clientes.forEach(cli => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<p>ID: ${cli.id} | Nombre: ${cli.nombre} | Ciudad: ${cli.ciudad} | Fecha Eliminación: ${cli.deleted_at || 'N/A'}</p>`;
+                    clientesDiv.appendChild(div);
+                });
+            }
+        } catch (error) {
+            console.error('Error al cargar historial:', error);
+        }
+    }
+
+    window.onload = fetchHistorial;
+    </script>
 </body>
 </html>
