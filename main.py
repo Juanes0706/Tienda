@@ -118,7 +118,7 @@ async def informacion_del_proyecto(request: Request):
 #                       ENDPOINTS DE CATEGORÍAS
 # -----------------------------------------------------------------------
 
-from fastapi import Request  # ensure import Request at top if not already
+from fastapi import Request # ensure import Request at top if not already
 
 @app.post("/categorias/")
 async def crear_categoria(
@@ -143,6 +143,10 @@ async def crear_categoria(
         raise HTTPException(status_code=400, detail="Categoría ya existe o error en la creación")
 
     return templates.TemplateResponse("categorias/create.html", {"request": request, "success": True, "categoria": categoria_creada})
+
+# -----------------------------------------------------------------------
+#                       ENDPOINTS DE PRODUCTOS (MODIFICADOS)
+# -----------------------------------------------------------------------
 
 @app.post("/productos/create")
 async def crear_producto(
@@ -173,6 +177,23 @@ async def crear_producto(
         raise HTTPException(status_code=400, detail="Error en la creación del producto")
 
     return templates.TemplateResponse("productos/create.html", {"request": request, "success": True, "producto": producto_creado})
+
+
+# ✅ NUEVO ENDPOINT PARA RECIBIR JSON EN LA RUTA /productos/
+@app.post("/productos/", response_model=Producto)
+async def crear_producto_json(producto_data: ProductoCreate):
+    """
+    Crea un nuevo producto recibiendo el cuerpo como JSON (ProductoCreate).
+    Este endpoint soluciona el error 405 al intentar POSTear a /productos/.
+    """
+    producto_creado = await crud.crear_producto(producto_data)
+    if not producto_creado:
+        raise HTTPException(status_code=400, detail="Error en la creación del producto o categoría_id inválido")
+    return producto_creado
+# -----------------------------------------------------------------------
+#                       FIN DE ENDPOINTS DE PRODUCTOS (MODIFICADOS)
+# -----------------------------------------------------------------------
+
 
 @app.get("/categorias/", response_model=list[Categoria])
 async def obtener_categorias(
@@ -209,7 +230,7 @@ async def obtener_categoria_con_productos(id: int):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return categoria
 
-from fastapi import Request  # ensure import Request at top if not already
+from fastapi import Request # ensure import Request at top if not already
 
 @app.get("/categorias/update")
 async def categorias_update(request: Request):
@@ -272,7 +293,7 @@ async def eliminar_categoria(id: int):
 
 
 # -----------------------------------------------------------------------
-#                       ENDPOINTS DE PRODUCTOS
+#                       ENDPOINTS DE PRODUCTOS (CONTINUACIÓN)
 # -----------------------------------------------------------------------
 
 @app.get("/productos/update")
