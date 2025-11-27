@@ -524,11 +524,52 @@ async def eliminar_cliente(id: int):
 # -----------------------------------------------------------------------
 
 @app.post("/ventas/", response_model=VentaResponse)
-async def crear_venta(venta_data: VentaCreate):
+async def crear_venta(request: Request):
     """
     Crea una nueva venta, sus detalles y actualiza el stock de productos.
-    Recibe el cuerpo como JSON (VentaCreate).
+    Recibe datos del formulario HTML.
     """
+    form_data = await request.form()
+
+    # Parsear datos básicos
+    cliente_id = int(form_data.get("cliente_id"))
+    canal_venta = form_data.get("canal_venta")
+    fecha_venta_str = form_data.get("fecha_venta")
+    fecha_venta = datetime.fromisoformat(fecha_venta_str) if fecha_venta_str else datetime.now()
+
+    # Parsear detalles dinámicos
+    detalles = []
+    total = 0.0
+    detalle_index = 1
+    while True:
+        producto_id_key = f"producto_id_{detalle_index}"
+        cantidad_key = f"cantidad_{detalle_index}"
+        precio_unitario_key = f"precio_unitario_{detalle_index}"
+
+        if producto_id_key not in form_data:
+            break
+
+        producto_id = int(form_data[producto_id_key])
+        cantidad = int(form_data[cantidad_key])
+        precio_unitario = float(form_data[precio_unitario_key])
+
+        detalles.append({
+            "producto_id": producto_id,
+            "cantidad": cantidad,
+            "precio_unitario": precio_unitario
+        })
+
+        total += cantidad * precio_unitario
+        detalle_index += 1
+
+    # Crear VentaCreate
+    venta_data = VentaCreate(
+        cliente_id=cliente_id,
+        canal_venta=canal_venta,
+        total=total,
+        detalles=detalles
+    )
+
     venta_creada = await crud.crear_venta(venta_data)
     if not venta_creada:
         # El error 400 ya puede venir de stock insuficiente o cliente_id inválido
