@@ -56,83 +56,47 @@
             <h2>Filtros</h2>
             <form method="get" action="/ventas/read">
                 <label for="cliente_id">ID de Cliente:</label>
-                <input type="number" id="cliente_id" name="cliente_id" />
+                <input type="number" id="cliente_id" name="cliente_id" value="{{ filtros.cliente_id }}" />
 
                 <label for="canal">Canal:</label>
                 <select id="canal" name="canal">
                     <option value="">Todos</option>
-                    <option value="presencial">Presencial</option>
-                    <option value="virtual">Virtual</option>
+                    <option value="presencial" {% if filtros.canal == "presencial" %}selected{% endif %}>Presencial</option>
+                    <option value="virtual" {% if filtros.canal == "virtual" %}selected{% endif %}>Virtual</option>
                 </select>
 
                 <label for="fecha_inicio">Fecha Inicio:</label>
-                <input type="date" id="fecha_inicio" name="fecha_inicio" />
+                <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ filtros.fecha_inicio }}" />
 
                 <label for="fecha_fin">Fecha Fin:</label>
-                <input type="date" id="fecha_fin" name="fecha_fin" />
+                <input type="date" id="fecha_fin" name="fecha_fin" value="{{ filtros.fecha_fin }}" />
 
                 <button type="submit">Filtrar</button>
             </form>
         </div>
 
         <div id="ventas-list">
-            <!-- Aquí se mostrarán las ventas dinámicamente -->
-        </div>
-    </div>
-
-    <script>
-        async function loadVentas() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const cliente_id = urlParams.get('cliente_id') || '';
-            const canal = urlParams.get('canal') || '';
-            const fecha_inicio = urlParams.get('fecha_inicio') || '';
-            const fecha_fin = urlParams.get('fecha_fin') || '';
-
-            const apiUrl = `/ventas/?cliente_id=${encodeURIComponent(cliente_id)}&canal=${encodeURIComponent(canal)}&fecha_inicio=${encodeURIComponent(fecha_inicio)}&fecha_fin=${encodeURIComponent(fecha_fin)}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status}`);
-                }
-                const ventas = await response.json();
-                console.log('Ventas received:', ventas);
-
-                const listDiv = document.getElementById('ventas-list');
-                listDiv.innerHTML = '';
-
-                if (ventas.length === 0) {
-                    listDiv.innerHTML = '<p>No se encontraron ventas.</p>';
-                    return;
-                }
-
-                ventas.forEach(venta => {
-                    const ventaDiv = document.createElement('div');
-                    ventaDiv.className = 'venta-item';
-                    ventaDiv.innerHTML = `
-                        <h3>Venta ID: ${venta.id}</h3>
-                        <p><strong>Cliente:</strong> ${venta.cliente.nombre} (${venta.cliente.ciudad})</p>
-                        <p><strong>Canal:</strong> ${venta.canal_venta}</p>
-                        <p><strong>Fecha:</strong> ${new Date(venta.fecha_venta).toLocaleString()}</p>
-                        <p><strong>Total:</strong> $${venta.total.toFixed(2)}</p>
+            {% if ventas %}
+                {% for venta in ventas %}
+                    <div class="venta-item">
+                        <h3>Venta ID: {{ venta.id }}</h3>
+                        <p><strong>Cliente:</strong> {{ venta.cliente.nombre }} ({{ venta.cliente.ciudad }})</p>
+                        <p><strong>Canal:</strong> {{ venta.canal_venta }}</p>
+                        <p><strong>Fecha:</strong> {{ venta.fecha_venta.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <p><strong>Total:</strong> ${{ "%.2f"|format(venta.total) }}</p>
                         <h4>Detalles:</h4>
                         <ul>
-                            ${venta.detalles.map(detalle => `
-                                <li>${detalle.producto.nombre} - Cantidad: ${detalle.cantidad} - Precio: $${detalle.precio_unitario.toFixed(2)} - Subtotal: $${detalle.subtotal.toFixed(2)}</li>
-                            `).join('')}
+                            {% for detalle in venta.detalles %}
+                                <li>{{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ "%.2f"|format(detalle.precio_unitario) }} - Subtotal: ${{ "%.2f"|format(detalle.subtotal) }}</li>
+                            {% endfor %}
                         </ul>
                         <hr>
-                    `;
-                    listDiv.appendChild(ventaDiv);
-                });
-            } catch (error) {
-                console.error('Error al cargar ventas:', error);
-                document.getElementById('ventas-list').innerHTML = '<p>Error al cargar las ventas.</p>';
-            }
-        }
-
-        // Cargar ventas al cargar la página
-        window.onload = loadVentas;
-    </script>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No se encontraron ventas.</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

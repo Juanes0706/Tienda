@@ -131,8 +131,36 @@ async def ventas_create(request: Request):
     return templates.TemplateResponse("ventas/create.html", {"request": request})
 
 @app.get("/ventas/read")
-async def ventas_read(request: Request):
-    return templates.TemplateResponse("ventas/read.html", {"request": request})
+async def ventas_read(
+    request: Request,
+    cliente_id: Optional[str] = Query(None),
+    canal: Optional[str] = Query(None),
+    fecha_inicio: Optional[str] = Query(None),
+    fecha_fin: Optional[str] = Query(None)
+):
+    # Convertir parámetros de string a tipos apropiados, manejando strings vacías
+    cliente_id_int = int(cliente_id) if cliente_id and cliente_id.isdigit() else None
+    canal_str = canal if canal else None
+    fecha_inicio_dt = datetime.fromisoformat(fecha_inicio) if fecha_inicio else None
+    fecha_fin_dt = datetime.fromisoformat(fecha_fin) if fecha_fin else None
+
+    ventas = await crud.obtener_ventas(
+        cliente_id=cliente_id_int,
+        canal_venta=canal_str,
+        fecha_inicio=fecha_inicio_dt,
+        fecha_fin=fecha_fin_dt
+    )
+
+    return templates.TemplateResponse("ventas/read.html", {
+        "request": request,
+        "ventas": ventas,
+        "filtros": {
+            "cliente_id": cliente_id or "",
+            "canal": canal or "",
+            "fecha_inicio": fecha_inicio or "",
+            "fecha_fin": fecha_fin or ""
+        }
+    })
 
 @app.get("/historial")
 async def historial(request: Request):
