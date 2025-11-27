@@ -58,7 +58,10 @@
                 <input type="number" id="cliente_id" name="cliente_id" required />
 
                 <label for="canal_venta">Canal de Venta:</label>
-                <input type="text" id="canal_venta" name="canal_venta" required />
+                <select id="canal_venta" name="canal_venta" required>
+                    <option value="presencial">Presencial</option>
+                    <option value="virtual">Virtual</option>
+                </select>
 
                 <label for="fecha_venta">Fecha de Venta:</label>
                 <input type="datetime-local" id="fecha_venta" name="fecha_venta" required />
