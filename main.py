@@ -523,11 +523,11 @@ async def eliminar_cliente(id: int):
 #                       ENDPOINTS DE VENTAS 🛒 (NUEVOS)
 # -----------------------------------------------------------------------
 
-@app.post("/ventas/", response_model=VentaResponse)
+@app.post("/ventas/")
 async def crear_venta(request: Request):
     """
     Crea una nueva venta, sus detalles y actualiza el stock de productos.
-    Recibe datos del formulario HTML.
+    Recibe datos del formulario HTML y devuelve respuesta HTML.
     """
     form_data = await request.form()
 
@@ -572,9 +572,11 @@ async def crear_venta(request: Request):
 
     venta_creada = await crud.crear_venta(venta_data)
     if not venta_creada:
-        # El error 400 ya puede venir de stock insuficiente o cliente_id inválido
-        raise HTTPException(status_code=400, detail="Error al crear la venta. Verifique stock o cliente_id.")
-    return venta_creada
+        # Mostrar error en el HTML
+        error_message = "Error al crear la venta. Verifique stock o cliente_id."
+        return templates.TemplateResponse("ventas/create.html", {"request": request, "error_message": error_message})
+    # Éxito: mostrar mensaje de éxito o redirigir
+    return templates.TemplateResponse("ventas/create.html", {"request": request, "success": True, "venta": venta_creada})
 
 @app.get("/ventas/", response_model=List[VentaResponse])
 async def obtener_ventas(

@@ -52,6 +52,18 @@
     <div class="container">
         <h1>Crear Nueva Venta</h1>
 
+        {% if error_message %}
+            <div style="color: red; margin-bottom: 20px; padding: 10px; border: 1px solid red; background-color: #ffe6e6;">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        {% if success %}
+            <div style="color: green; margin-bottom: 20px; padding: 10px; border: 1px solid green; background-color: #e6ffe6;">
+                Venta creada exitosamente. ID: {{ venta.id }}
+            </div>
+        {% endif %}
+
         <div class="form-section">
             <form method="post" action="/ventas/" enctype="multipart/form-data">
                 <label for="cliente_id">ID del Cliente:</label>
