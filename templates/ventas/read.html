@@ -87,7 +87,7 @@
                         <h4>Detalles:</h4>
                         <ul>
                             {% for detalle in venta.detalles %}
-                                <li>{{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ "%.2f"|format(detalle.precio_unitario) }} - Subtotal: ${{ "%.2f"|format(detalle.subtotal) }}</li>
+                                <li>{{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ "%.2f"|format(detalle.precio_unitario) }} - Subtotal: ${{ "%.2f"|format(detalle.cantidad * detalle.precio_unitario) }}</li>
                             {% endfor %}
                         </ul>
                         <hr>
