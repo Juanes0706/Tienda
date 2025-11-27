@@ -373,7 +373,7 @@ async def obtener_ventas(
 ):
     """Obtiene ventas, con filtros opcionales."""
     async with AsyncSession(async_engine) as session:
-        query = select(Venta).options(selectinload(Venta.cliente), selectinload(Venta.detalles).selectinload(DetalleVenta.producto))
+        query = select(Venta).options(selectinload(Venta.cliente), selectinload(Venta.detalles).selectinload(DetalleVenta.producto).selectinload(Producto.categoria))
 
         if cliente_id is not None:
             query = query.where(Venta.cliente_id == cliente_id)
@@ -392,8 +392,8 @@ async def obtener_venta(id: int):
     """Obtiene una venta específica por ID."""
     async with AsyncSession(async_engine) as session:
         query = select(Venta).where(Venta.id == id).options(
-            selectinload(Venta.cliente), 
-            selectinload(Venta.detalles).selectinload(DetalleVenta.producto)
+            selectinload(Venta.cliente),
+            selectinload(Venta.detalles).selectinload(DetalleVenta.producto).selectinload(Producto.categoria)
         )
         result = await session.exec(query)
         venta = result.first()
