@@ -59,13 +59,11 @@ async def categorias_update(request: Request):
             id_int = int(id_str)
             categoria_data = await crud.obtener_categoria(id_int)
             if not categoria_data:
-                # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
                 error_message = f"La Categoría con ID {id_int} no fue encontrada."
-            # ================================================
+            
         except ValueError:
-            # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
             error_message = "ID inválido. Debe ser un número entero."
-            # ================================================
+            
     return templates.TemplateResponse("categorias/update.html", {"request": request, "categoria": categoria_data, "error_message": error_message})
 
 @app.get("/categorias/delete")
@@ -92,9 +90,8 @@ async def productos_update(request: Request, id: Optional[int] = None):
         # Asumimos que si llega aquí, 'id' es None o un int válido.
         producto_data = await crud.obtener_producto(id)
         if not producto_data:
-            # === MODIFICACIÓN PARA MOSTRAR MENSAJE CLARO ===
             error_message = f"El Producto con ID {id} no fue encontrado."
-            # ================================================
+            
     return templates.TemplateResponse("productos/update.html", {"request": request, "producto": producto_data, "error_message": error_message})
 
 
@@ -588,8 +585,25 @@ async def obtener_ventas(
     # Convertir parámetros de string a tipos apropiados, manejando strings vacías
     cliente_id_int = int(cliente_id) if cliente_id and cliente_id.isdigit() else None
     canal_str = canal if canal else None
-    fecha_inicio_dt = datetime.fromisoformat(fecha_inicio) if fecha_inicio else None
-    fecha_fin_dt = datetime.fromisoformat(fecha_fin) if fecha_fin else None
+    
+    # === MODIFICACIÓN: Manejar la conversión de fecha de forma robusta ===
+    fecha_inicio_dt = None
+    if fecha_inicio:
+        try:
+            fecha_inicio_dt = datetime.fromisoformat(fecha_inicio)
+        except ValueError:
+            # Si la conversión falla (por formato inválido o cadena vacía/nula), se ignora el filtro
+            pass
+
+    fecha_fin_dt = None
+    if fecha_fin:
+        try:
+            fecha_fin_dt = datetime.fromisoformat(fecha_fin)
+        except ValueError:
+            # Si la conversión falla, se ignora el filtro
+            pass
+    # =======================================================================
+
 
     ventas = await crud.obtener_ventas(
         cliente_id=cliente_id_int,
