@@ -537,16 +537,22 @@ async def crear_venta(venta_data: VentaCreate):
 
 @app.get("/ventas/", response_model=List[VentaResponse])
 async def obtener_ventas(
-    cliente_id: Optional[int] = Query(None, description="Filtrar por ID de cliente"),
+    cliente_id: Optional[str] = Query(None, description="Filtrar por ID de cliente"),
     canal: Optional[str] = Query(None, description="Filtrar por canal de venta ('presencial' o 'virtual')"),
-    fecha_inicio: Optional[datetime] = Query(None, description="Fecha de inicio (ISO 8601)"),
-    fecha_fin: Optional[datetime] = Query(None, description="Fecha de fin (ISO 8601)")
+    fecha_inicio: Optional[str] = Query(None, description="Fecha de inicio (ISO 8601)"),
+    fecha_fin: Optional[str] = Query(None, description="Fecha de fin (ISO 8601)")
 ):
+    # Convertir parámetros de string a tipos apropiados, manejando strings vacías
+    cliente_id_int = int(cliente_id) if cliente_id and cliente_id.isdigit() else None
+    canal_str = canal if canal else None
+    fecha_inicio_dt = datetime.fromisoformat(fecha_inicio) if fecha_inicio else None
+    fecha_fin_dt = datetime.fromisoformat(fecha_fin) if fecha_fin else None
+
     ventas = await crud.obtener_ventas(
-        cliente_id=cliente_id,
-        canal_venta=canal,
-        fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
+        cliente_id=cliente_id_int,
+        canal_venta=canal_str,
+        fecha_inicio=fecha_inicio_dt,
+        fecha_fin=fecha_fin_dt
     )
     return ventas
 
