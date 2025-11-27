@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
             productoDiv.classList.add('result-item');
 
             productoDiv.innerHTML = `
-                <h3>${producto.nombre} ${producto.activo ? '' : '(Inactivo)'}</h3>
+                <h3>${producto.nombre} ${producto.activo ? '' : '(Inactivo)'} (ID: ${producto.id})</h3>
                 <img src="${producto.media_url || '/static/img/no-image.png'}" alt="${producto.nombre}" style="max-width:150px; max-height:150px;" />
                 <p><strong>Descripción:</strong> ${producto.descripcion || 'N/A'}</p>
                 <p><strong>Precio:</strong> $${producto.precio.toFixed(2)}</p>

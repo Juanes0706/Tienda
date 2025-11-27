@@ -101,7 +101,7 @@
                     const categoriaDiv = document.createElement('div');
                     categoriaDiv.className = 'categoria-item';
                     categoriaDiv.innerHTML = `
-                        <h3>${categoria.nombre}</h3>
+                        <h3>${categoria.nombre} (ID: ${categoria.id})</h3>
                         <p><strong>Descripción:</strong> ${categoria.descripcion || 'Sin descripción'}</p>
                         <p><strong>Activa:</strong> ${categoria.activa ? 'Sí' : 'No'}</p>
                         ${categoria.media_url ? `<img src="${categoria.media_url}" alt="${categoria.nombre}" style="max-width: 200px; max-height: 200px;" />` : ''}
