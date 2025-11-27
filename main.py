@@ -310,6 +310,8 @@ async def crear_producto(
     categoria_id: int = Form(...),
     imagen: Optional[UploadFile] = File(None)
 ):
+    from sqlalchemy.exc import IntegrityError
+
     imagen_url = None
     if imagen and imagen.filename:
         imagen_url = await upload_image_to_supabase(imagen)
@@ -323,11 +325,20 @@ async def crear_producto(
         categoria_id=categoria_id,
         media_url=imagen_url
     )
-    producto_creado = await crud.crear_producto(producto_data)
-    if not producto_creado:
-        raise HTTPException(status_code=400, detail="Error en la creación del producto")
 
-    return templates.TemplateResponse("productos/create.html", {"request": request, "success": True, "producto": producto_creado})
+    try:
+        producto_creado = await crud.crear_producto(producto_data)
+        if not producto_creado:
+            error_message = "Error en la creación del producto"
+            return templates.TemplateResponse("productos/create.html", {"request": request, "error_message": error_message})
+
+        return templates.TemplateResponse("productos/create.html", {"request": request, "success": True, "producto": producto_creado})
+    except IntegrityError as e:
+        if "foreign key constraint" in str(e).lower():
+            error_message = f"La categoría con ID {categoria_id} no existe. Por favor, verifica el ID de la categoría."
+        else:
+            error_message = "Error de integridad en la base de datos. Verifica los datos ingresados."
+        return templates.TemplateResponse("productos/create.html", {"request": request, "error_message": error_message})
 
 
 @app.get("/productos/", response_model=list[ProductoListResponse])
