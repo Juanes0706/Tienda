@@ -189,6 +189,15 @@
                 </div>
             </div>
         </div>
+
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <h3>💰 Total de Ventas por Año</h3>
+                <div class="chart-container">
+                    <canvas id="totalSalesChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -432,6 +441,70 @@
             });
         }
 
+        // Gráfica de total de ventas por año
+        async function createTotalSalesChart() {
+            const data = await loadChartData('/api/charts/total-sales-by-year');
+            if (!data) return;
+
+            const ctx = document.getElementById('totalSalesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Total de Ventas',
+                        data: Object.values(data),
+                        backgroundColor: colors.primary[2],
+                        borderColor: colors.primary[2],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        hoverBackgroundColor: colors.primary[3]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                title: function(context) {
+                                    return `Año: ${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    return `Total Ventas: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // Actualizar estadísticas
         async function updateStats() {
             const monthlyData = await loadChartData('/api/charts/sales-by-month');
@@ -453,6 +526,7 @@
             createSalesByCategoryChart();
             createTopProductsChart();
             createSalesTrendChart();
+            createTotalSalesChart();
             updateStats();
         });
 
