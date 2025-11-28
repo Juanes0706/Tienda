@@ -182,6 +182,53 @@ async def design(request: Request):
 async def informacion_del_proyecto(request: Request):
     return templates.TemplateResponse("informacion-del-proyecto.html", {"request": request})
 
+@app.get("/charts")
+async def charts(request: Request):
+    return templates.TemplateResponse("charts.html", {"request": request})
+
+@app.get("/api/charts/sales-by-month")
+async def get_sales_by_month():
+    """Obtener ventas agrupadas por mes"""
+    # Aquí conectaremos con la base de datos valeo_db
+    # Por ahora retornamos datos de ejemplo basados en los datos SQL
+    return {
+        "2023-01": 45, "2023-02": 38, "2023-03": 52, "2023-04": 41,
+        "2023-05": 49, "2023-06": 43, "2023-07": 47, "2023-08": 46,
+        "2023-09": 39, "2023-10": 48, "2023-11": 42, "2023-12": 44,
+        "2024-01": 51, "2024-02": 46, "2024-03": 43, "2024-04": 47,
+        "2024-05": 48, "2024-06": 42, "2024-07": 45, "2024-08": 44,
+        "2024-09": 46, "2024-10": 43, "2024-11": 41, "2024-12": 40
+    }
+
+@app.get("/api/charts/sales-by-category")
+async def get_sales_by_category():
+    """Obtener ventas agrupadas por categoría de producto"""
+    return {
+        "Licuadoras": 285,
+        "Ollas": 142,
+        "Ventiladores": 98,
+        "Parrillas": 75
+    }
+
+@app.get("/api/charts/top-products")
+async def get_top_products():
+    """Obtener los productos más vendidos"""
+    return [
+        {"name": "Tapa dosificadora licuadora", "sales": 67},
+        {"name": "Pito para olla", "sales": 58},
+        {"name": "Manija de olla", "sales": 52},
+        {"name": "Cuchilla de licuadora", "sales": 49},
+        {"name": "Base de capuchon", "sales": 45}
+    ]
+
+@app.get("/api/charts/sales-trend")
+async def get_sales_trend():
+    """Obtener tendencia de ventas por trimestre"""
+    return {
+        "Q1 2023": 135, "Q2 2023": 141, "Q3 2023": 132, "Q4 2023": 134,
+        "Q1 2024": 140, "Q2 2024": 137, "Q3 2024": 135, "Q4 2024": 124
+    }
+
 # -----------------------------------------------------------------------
 #                       ENDPOINTS DE CATEGORÍAS
 # -----------------------------------------------------------------------
