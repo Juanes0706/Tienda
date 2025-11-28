@@ -335,7 +335,7 @@ async def crear_producto(
         return templates.TemplateResponse("productos/create.html", {"request": request, "success": True, "producto": producto_creado})
     except IntegrityError as e:
         if "foreign key constraint" in str(e).lower():
-            error_message = f"La categoría con ID {categoria_id} no existe. Por favor, verifica el ID de la categoría."
+            error_message = "error: id de categoria no existe"
         else:
             error_message = "Error de integridad en la base de datos. Verifica los datos ingresados."
         return templates.TemplateResponse("productos/create.html", {"request": request, "error_message": error_message})
