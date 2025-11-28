@@ -443,8 +443,8 @@
                 const totalSales = Object.values(monthlyData).reduce((a, b) => a + b, 0);
                 const avgMonthly = Math.round(totalSales / Object.keys(monthlyData).length);
 
-                document.getElementById('total-sales').textContent = totalSales;
-                document.getElementById('avg-monthly').textContent = avgMonthly;
+                document.getElementById('total-sales').textContent = '$ ' + totalSales.toLocaleString('es-ES');
+                document.getElementById('avg-monthly').textContent = '$ ' + avgMonthly.toLocaleString('es-ES');
             }
 
             document.getElementById('total-products').textContent = '12';
