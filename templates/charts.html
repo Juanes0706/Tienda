@@ -1,486 +1,468 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Ventas - VALEO</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
-    <style>
-        .charts-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Ventas - VALEO</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <style>
+        .charts-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-        .chart-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-        .chart-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            flex: 1;
-            min-width: 300px;
-        }
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            flex: 1;
+            min-width: 300px;
+        }
 
-        .chart-card h3 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .chart-card h3 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
 
-        .full-width {
-            flex: 1 1 100%;
-        }
+        .full-width {
+            flex: 1 1 100%;
+        }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
 
-        .header p {
-            color: #7f8c8d;
-            font-size: 16px;
-        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
 
-        .stat-card h4 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            opacity: 0.9;
-        }
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
 
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 0;
-        }
-    </style>
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/">Inicio</a>
-        <div class="dropdown">
-            <button class="dropbtn">Categorías</button>
-            <div class="dropdown-content">
-                <a href="/categorias/create">Crear Categoría</a>
-                <a href="/categorias/read">Ver Categorías</a>
-                <a href="/categorias/update">Actualizar Categoría</a>
-                <a href="/categorias/delete">Eliminar Categoría</a>
-            </div>
-        </div>
-        <div class="dropdown">
-            <button class="dropbtn">Productos</button>
-            <div class="dropdown-content">
-                <a href="/productos/create">Crear Producto</a>
-                <a href="/productos/read">Ver Productos</a>
-                <a href="/productos/update">Actualizar Producto</a>
-                <a href="/productos/delete">Eliminar Producto</a>
-            </div>
-        </div>
-        <div class="dropdown">
-            <button class="dropbtn">Clientes</button>
-            <div class="dropdown-content">
-                <a href="/clientes/create">Crear Cliente</a>
-                <a href="/clientes/read">Ver Clientes</a>
-                <a href="/clientes/update">Actualizar Cliente</a>
-                <a href="/clientes/delete">Eliminar Cliente</a>
-            </div>
-        </div>
-        <div class="dropdown">
-            <button class="dropbtn">Ventas</button>
-            <div class="dropdown-content">
-                <a href="/ventas/create">Crear Venta</a>
-                <a href="/ventas/read">Ver Ventas</a>
-            </div>
-        </div>
-        <a href="/charts">📊 Dashboard</a>
-        <a href="/historial">Historial</a>
-        <a href="/developer-info">Información del Desarrollador</a>
-        <a href="/planning">Planificación</a>
-        <a href="/design">Diseño</a>
-        <a href="/informacion-del-proyecto">Información del Proyecto</a>
-    </nav>
-    <div class="charts-container">
-        <div class="header">
-            <h1>📊 Dashboard de Ventas VALEO</h1>
-            <p>Análisis de ventas 2023-2024</p>
-        </div>
+    <nav class="navbar">
+        <a href="/">Inicio</a>
+        <div class="dropdown">
+            <button class="dropbtn">Categorías</button>
+            <div class="dropdown-content">
+                <a href="/categorias/create">Crear Categoría</a>
+                <a href="/categorias/read">Ver Categorías</a>
+                <a href="/categorias/update">Actualizar Categoría</a>
+                <a href="/categorias/delete">Eliminar Categoría</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Productos</button>
+            <div class="dropdown-content">
+                <a href="/productos/create">Crear Producto</a>
+                <a href="/productos/read">Ver Productos</a>
+                <a href="/productos/update">Actualizar Producto</a>
+                <a href="/productos/delete">Eliminar Producto</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Clientes</button>
+            <div class="dropdown-content">
+                <a href="/clientes/create">Crear Cliente</a>
+                <a href="/clientes/read">Ver Clientes</a>
+                <a href="/clientes/update">Actualizar Cliente</a>
+                <a href="/clientes/delete">Eliminar Cliente</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Ventas</button>
+            <div class="dropdown-content">
+                <a href="/ventas/create">Crear Venta</a>
+                <a href="/ventas/read">Ver Ventas</a>
+            </div>
+        </div>
+        <a href="/charts">📊 Dashboard</a>
+        <a href="/historial">Historial</a>
+        <a href="/developer-info">Información del Desarrollador</a>
+        <a href="/planning">Planificación</a>
+        <a href="/design">Diseño</a>
+        <a href="/informacion-del-proyecto">Información del Proyecto</a>
+    </nav>
+    <div class="charts-container">
+        <div class="header">
+            <h1>📊 Dashboard de Ventas VALEO</h1>
+            <p>Análisis de ventas 2023-2024</p>
+        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4>Ingresos Totales</h4>
-                                <p class="value" id="total-sales">Cargando...</p>
-            </div>
-            <div class="stat-card">
-                <h4>Productos</h4>
-                <p class="value" id="total-products">12</p>
-            </div>
-            <div class="stat-card">
-                <h4>Categorías</h4>
-                <p class="value" id="total-categories">4</p>
-            </div>
-            <div class="stat-card">
-                <h4>Promedio Mensual de Ingresos</h4>
-                                <p class="value" id="avg-monthly">Cargando...</p>
-            </div>
-        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Ingresos Totales</h4>
+                <p class="value" id="total-sales">$ 9.986.500</p>
+            </div>
+            <div class="stat-card">
+                <h4>Productos</h4>
+                <p class="value" id="total-products">12</p>
+            </div>
+            <div class="stat-card">
+                <h4>Categorías</h4>
+                <p class="value" id="total-categories">4</p>
+            </div>
+            <div class="stat-card">
+                <h4>Promedio Mensual de Ingresos</h4>
+                <p class="value" id="avg-monthly">$ 831.375</p>
+            </div>
+        </div>
 
-        <div class="chart-row">
-            <div class="chart-card full-width">
-                <h3>📈 Ventas Mensuales 2023-2024</h3>
-                <div class="chart-container">
-                    <canvas id="salesByMonthChart"></canvas>
-                </div>
-            </div>
-        </div>
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <h3>📈 Ventas Mensuales 2023-2024</h3>
+                <div class="chart-container">
+                    <canvas id="salesByMonthChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-        <div class="chart-row">
-            <div class="chart-card">
-                <h3>🥧 Ventas por Categoría</h3>
-                <div class="chart-container">
-                    <canvas id="salesByCategoryChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <h3>📊 Top 5 Productos Más Vendidos</h3>
-                <div class="chart-container">
-                    <canvas id="topProductsChart"></canvas>
-                </div>
-            </div>
-        </div>
+        <div class="chart-row">
+            <div class="chart-card">
+                <h3>🥧 Ventas por Categoría</h3>
+                <div class="chart-container">
+                    <canvas id="salesByCategoryChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📊 Top 5 Productos Más Vendidos</h3>
+                <div class="chart-container">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-        <div class="chart-row">
-            <div class="chart-card full-width">
-                <h3>📉 Tendencia de Ventas por Trimestre</h3>
-                <div class="chart-container">
-                    <canvas id="salesTrendChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-
-    </div>
-
-    <script>
-        // Función para cargar datos de la API
-        async function loadChartData(endpoint) {
-            try {
-                const response = await fetch(endpoint);
-                return await response.json();
-            } catch (error) {
-                console.error('Error loading data:', error);
-                return null;
-            }
-        }
-
-        // Configurar colores para las gráficas
-        const colors = {
-            primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
-            secondary: ['#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#c8c8c8'],
-            gradients: [
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-            ]
-        };
-
-        // Gráfica de ventas por mes
-        async function createSalesByMonthChart() {
-            const data = await loadChartData('/api/charts/sales-by-month');
-            if (!data) return;
-
-            const ctx = document.getElementById('salesByMonthChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: 'Ventas Mensuales',
-                        data: Object.values(data),
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            callbacks: {
-                                title: function(context) {
-                                    return `Mes: ${context[0].label}`;
-                                },
-                                label: function(context) {
-                                    return `Ventas: ${context.parsed.y}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Gráfica de ventas por categoría
-        async function createSalesByCategoryChart() {
-            const data = await loadChartData('/api/charts/sales-by-category');
-            if (!data) return;
-
-            const ctx = document.getElementById('salesByCategoryChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        data: Object.values(data),
-                        backgroundColor: colors.primary,
-                        borderWidth: 2,
-                        borderColor: '#fff',
-                        hoverBorderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Gráfica de top productos
-        async function createTopProductsChart() {
-            const data = await loadChartData('/api/charts/top-products');
-            if (!data) return;
-
-            const ctx = document.getElementById('topProductsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.map(item => item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name),
-                    datasets: [{
-                        label: 'Unidades Vendidas',
-                        data: data.map(item => item.sales),
-                        backgroundColor: colors.primary[0],
-                        borderColor: colors.primary[0],
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function(context) {
-                                    return data[context[0].dataIndex].name;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            },
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Gráfica de tendencia de ventas
-        async function createSalesTrendChart() {
-            const data = await loadChartData('/api/charts/sales-trend');
-            if (!data) return;
-
-            const ctx = document.getElementById('salesTrendChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: 'Ventas por Trimestre',
-                        data: Object.values(data),
-                        borderColor: '#f5576c',
-                        backgroundColor: 'rgba(245, 87, 108, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#f5576c',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        <div class="chart-row">
+            <div class="chart-card full-width">
+                <h3>📉 Tendencia de Ventas por Trimestre</h3>
+                <div class="chart-container">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
 
 
-        // Actualizar estadísticas (MODIFICADO)
-        async function updateStats() {
-            const totalProductsElement = document.getElementById('total-products');
-            const totalCategoriesElement = document.getElementById('total-categories');
-            const totalSalesElement = document.getElementById('total-sales');
-            const avgMonthlyElement = document.getElementById('avg-monthly');
+    </div>
 
-            // Asignar valores fijos a elementos estáticos
-            totalProductsElement.textContent = '12';
-            totalCategoriesElement.textContent = '4';
+    <script>
+        // Función para cargar datos de la API
+        async function loadChartData(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                return null;
+            }
+        }
 
-            const monthlyData = await loadChartData('/api/charts/sales-by-month');
-            
-            if (monthlyData && Object.keys(monthlyData).length > 0) {
-                const totalSales = Object.values(monthlyData).reduce((a, b) => a + b, 0);
-                // Calcular el promedio dividiendo el total por el número de meses
-                const avgMonthly = Math.round(totalSales / Object.keys(monthlyData).length);
+        // Configurar colores para las gráficas
+        const colors = {
+            primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+            secondary: ['#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#c8c8c8'],
+            gradients: [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+            ]
+        };
 
-                totalSalesElement.textContent = '$ ' + totalSales.toLocaleString('es-ES');
-                avgMonthlyElement.textContent = '$ ' + avgMonthly.toLocaleString('es-ES');
-            } else {
-                // Manejo de error o datos no válidos
-                totalSalesElement.textContent = '$ -';
-                avgMonthlyElement.textContent = '$ -';
-                console.warn('API /api/charts/sales-by-month no devolvió datos válidos para las estadísticas.');
-            }
-        }
+        // Gráfica de ventas por mes
+        async function createSalesByMonthChart() {
+            const data = await loadChartData('/api/charts/sales-by-month');
+            if (!data) return;
 
-        // Inicializar todas las gráficas
-        document.addEventListener('DOMContentLoaded', function() {
-            createSalesByMonthChart();
-            createSalesByCategoryChart();
-            createTopProductsChart();
-            createSalesTrendChart();
-            updateStats();
-        });
+            const ctx = document.getElementById('salesByMonthChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Ventas Mensuales',
+                        data: Object.values(data),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                title: function(context) {
+                                    return `Mes: ${context[0].label}`;
+                                },
+                                label: function(context) {
+                                    return `Ventas: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // Actualizar gráficas cada 30 segundos
-        setInterval(function() {
-            // Recargar datos y actualizar gráficas
-            createSalesByMonthChart();
-            createSalesByCategoryChart();
-            createTopProductsChart();
-            createSalesTrendChart();
-            updateStats();
-        }, 30000);
-    </script>
+        // Gráfica de ventas por categoría
+        async function createSalesByCategoryChart() {
+            const data = await loadChartData('/api/charts/sales-by-category');
+            if (!data) return;
+
+            const ctx = document.getElementById('salesByCategoryChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: colors.primary,
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfica de top productos
+        async function createTopProductsChart() {
+            const data = await loadChartData('/api/charts/top-products');
+            if (!data) return;
+
+            const ctx = document.getElementById('topProductsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name),
+                    datasets: [{
+                        label: 'Unidades Vendidas',
+                        data: data.map(item => item.sales),
+                        backgroundColor: colors.primary[0],
+                        borderColor: colors.primary[0],
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return data[context[0].dataIndex].name;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfica de tendencia de ventas
+        async function createSalesTrendChart() {
+            const data = await loadChartData('/api/charts/sales-trend');
+            if (!data) return;
+
+            const ctx = document.getElementById('salesTrendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Ventas por Trimestre',
+                        data: Object.values(data),
+                        borderColor: '#f5576c',
+                        backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#f5576c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+        // Actualizar estadísticas
+        async function updateStats() {
+            // Mantener los valores hardcodeados para Ingresos Totales y Promedio Mensual
+            // ya que los datos de la API no coinciden con los valores esperados
+
+            document.getElementById('total-products').textContent = '12';
+            document.getElementById('total-categories').textContent = '4';
+        }
+
+        // Inicializar todas las gráficas
+        document.addEventListener('DOMContentLoaded', function() {
+            createSalesByMonthChart();
+            createSalesByCategoryChart();
+            createTopProductsChart();
+            createSalesTrendChart();
+            updateStats();
+        });
+
+        // Actualizar gráficas cada 30 segundos
+        setInterval(function() {
+            // Recargar datos y actualizar gráficas
+            createSalesByMonthChart();
+            createSalesByCategoryChart();
+            createTopProductsChart();
+            createSalesTrendChart();
+            updateStats();
+        }, 30000);
+    </script>
 </body>
 </html>
