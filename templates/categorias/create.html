@@ -54,6 +54,16 @@
         <h1>Crear Nueva Categoría</h1>
 
         <div class="form-section">
+            {% if error_message %}
+                <div class="error-message" style="color: red; margin-bottom: 20px;">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+            {% if success %}
+                <div class="success-message" style="color: green; margin-bottom: 20px;">
+                    Categoría creada exitosamente.
+                </div>
+            {% endif %}
             <form method="post" action="/categorias" enctype="multipart/form-data">
                 <label for="nombre">Nombre de la Categoría:</label>
                 <input type="text" id="nombre" name="nombre" required />

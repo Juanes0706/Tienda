@@ -25,9 +25,16 @@ class ClienteProducto(SQLModel, table=True):
 class Cliente(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(index=True)
+    cedula: Optional[str] = None
+    tipo_cliente: Optional[str] = None
+    cliente_frecuente: Optional[bool] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    usuario_id: Optional[int] = None
     ciudad: str
     canal: str
     media_url: Optional[str] = None
+    creado_en: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
 
     # CORRECCIÓN: Usar "Venta" como string
@@ -79,15 +86,24 @@ class DetalleVenta(SQLModel, table=True):
     producto: "Producto" = Relationship(back_populates="detalles_venta")
 
 
+class Compras(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    cliente_id: Optional[int] = None
+    producto_id: Optional[int] = None
+    cantidad: Optional[int] = None
+    precio_unitario_aplicado: Optional[float] = None
+    total: Optional[float] = None
+    fecha: Optional[datetime] = None
+
 class Venta(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     fecha_venta: datetime = Field(default_factory=datetime.now)
     total: float
     canal_venta: str = Field(default="presencial", description="Tipo de venta: 'presencial' o 'virtual'")
-    
+
     cliente_id: int = Field(foreign_key="cliente.id")
     # CORRECCIÓN: Usar strings
     cliente: "Cliente" = Relationship(back_populates="ventas")
-    
+
     # CORRECCIÓN: Usar strings
     detalles: List["DetalleVenta"] = Relationship(back_populates="venta")

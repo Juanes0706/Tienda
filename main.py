@@ -254,7 +254,8 @@ async def crear_categoria(
     )
     categoria_creada = await crud.crear_categoria(categoria_data)
     if not categoria_creada:
-        raise HTTPException(status_code=400, detail="Categoría ya existe o error en la creación")
+        error_message = "Categoría ya existe o error en la creación"
+        return templates.TemplateResponse("categorias/create.html", {"request": request, "error_message": error_message})
 
     return templates.TemplateResponse("categorias/create.html", {"request": request, "success": True, "categoria": categoria_creada})
 
