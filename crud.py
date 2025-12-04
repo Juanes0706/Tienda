@@ -48,12 +48,27 @@ async def obtener_categoria(id: int):
     
 async def eliminar_categoria(id: int):
     async with AsyncSession(async_engine) as session:
-        categoria = await session.get(Categoria, id)
+        # 1. Cargar la categoría CON sus productos
+        result = await session.exec(
+            select(Categoria)
+            .where(Categoria.id == id)
+            .options(selectinload(Categoria.productos)) # 👈 Carga la relación
+        )
+        categoria = result.first()
+        
         if categoria:
+            # 2. Desactivar todos los productos asociados
+            for producto in categoria.productos:
+                if producto.deleted_at is None:
+                    producto.activo = False # 👈 Desactiva el producto
+                    
+            # 3. Realizar el borrado suave de la categoría
             categoria.deleted_at = datetime.now()
+            
             await session.commit()
             await session.refresh(categoria)
             return True
+        
         return False
 
 async def obtener_categoria_con_productos(id: int):

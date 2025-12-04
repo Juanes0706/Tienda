@@ -59,7 +59,7 @@
                 <label for="id">ID de la Categoría:</label>
                 <input type="number" id="id" name="id" required />
 
-                <button type="submit">Eliminar Categoría</button>
+                <button type="submit">Eliminar Categoría (Desactiva Productos)</button>
             </form>
             <div id="message"></div>
         </div>
@@ -75,13 +75,28 @@
                 return;
             }
 
+            // 🚨 MODIFICACIÓN CLAVE: Agregar advertencia de confirmación antes de la llamada a la API
+            const confirm_deletion = confirm(
+                "¡ADVERTENCIA CRÍTICA! ⚠️\n\n" +
+                "Al eliminar esta categoría, todos sus productos asociados " +
+                "serán marcados como INACTIVOS (activo=False). " +
+                "¿Está seguro de que desea proceder con la eliminación y desactivación?"
+            );
+            
+            if (!confirm_deletion) {
+                document.getElementById('message').innerHTML = '<p style="color: orange;">Eliminación cancelada por el usuario.</p>';
+                return;
+            }
+            // ---------------------------------------------------------------------------------
+
             try {
                 const response = await fetch(`/categorias/${id}`, {
                     method: 'DELETE'
                 });
 
                 if (response.ok) {
-                    document.getElementById('message').innerHTML = '<p style="color: green;">Categoría eliminada exitosamente.</p>';
+                    // Modificación: Actualizar el mensaje de éxito
+                    document.getElementById('message').innerHTML = '<p style="color: green;">Categoría eliminada exitosamente y sus productos asociados fueron desactivados. ✔️</p>';
                     document.getElementById('deleteForm').reset();
                 } else {
                     const error = await response.json();
@@ -94,3 +109,5 @@
         });
     </script>
 
+</body>
+</html>
